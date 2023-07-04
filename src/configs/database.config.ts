@@ -1,5 +1,7 @@
 import "reflect-metadata"
-import { User } from "../entity/users.entity"
+import { User } from "../entities/users.entity"
+import { Order } from "../entities/orders.entity"
+import { Product } from "../entities/products.entity"
 
 export const DatabaseConfig = {
     type: "postgres",
@@ -8,7 +10,7 @@ export const DatabaseConfig = {
     username: "postgres",
     password: "alpha23",
     database: "postgres",
-    entities: [User],
+    entities: [User, Product, Order],
     synchronize: true,
     migrations: ["src/migrations"],
 }
