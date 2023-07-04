@@ -1,5 +1,8 @@
 import { IRouter as RouterInstance, Router as ExpressRouter } from "express";
 import { UserRoutes } from "./user.route";
+import { OrderRoutes } from "./order.route";
+import { ProductRoutes } from "./product.route";
+
 /**
  * Router Middleware
  */
@@ -11,7 +14,11 @@ class Router {
     // Initialize router
     this.middleware = ExpressRouter();
 
-    this.map([{ segment: "/users", handler: UserRoutes.router }]);
+    this.map([
+      { segment: "/users", handler: UserRoutes.router },
+      { segment: "/products", handler: ProductRoutes.router },
+      { segment: "/orders", handler: OrderRoutes.router },
+    ]);
   }
 
   /**

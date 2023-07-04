@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { User } from "../entity/users.entity";
+import { User } from "../entities/users.entity";
 import { getRepository } from "typeorm";
 
 class UserController {
