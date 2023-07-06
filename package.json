@@ -6,7 +6,9 @@
    "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1",
       "start": "nodemon index.ts",
-      "typeorm": "typeorm-ts-node-commonjs"
+      "typeorm": "typeorm-ts-node-commonjs",
+      "prod_start": "node ./build/index.js",
+      "build": "npx tsc"
    },
    "keywords": [],
    "author": "",
