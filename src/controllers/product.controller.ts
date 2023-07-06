@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { Product } from "../entities/products.entity";
 import { getRepository } from "typeorm";
 import { getImageUrls, uploadImage } from "../services/firbase.service";
+import { getQueries } from "../utils/getFilterQueries";
 
 class ProductController {
   private static instance: ProductController;
@@ -16,8 +17,10 @@ class ProductController {
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
+      const queries = getQueries(req);
+
       const productRepository = getRepository(Product);
-      const products = await productRepository.find();
+      const products = await productRepository.find({ where: queries });
 
       const productsWithImages = products.map(async (product) => ({
         ...product,
@@ -46,7 +49,6 @@ class ProductController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const productRepository = getRepository(Product);
-      console.log(req.body)
       const product: Product = Object.assign(new Product(), { ...req.body });
 
       const savedProduct = await productRepository.save(product);
