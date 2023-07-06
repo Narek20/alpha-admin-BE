@@ -12,6 +12,11 @@ app.use(
     origin: "*",
   }),
 );
+app.use(express.json());
+app.use(express.static("public"))
+
+databaseConnection()
+readExcelData('./TEST.xlsx')
 
 /**
  * Lifecycle of a normal request
@@ -19,10 +24,7 @@ app.use(
  * - Router(s)
  */
 app.use(Router.middleware);
-databaseConnection()
-readExcelData('./TEST.xlsx')
-app.use(express.static("public"));
 
 app.listen(env.port || 8080, () => {
-  console.log("Server running on port 8080");
+console.log("Server running on port 8080");
 });

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { Product } from "../entities/products.entity";
 import { getRepository } from "typeorm";
+import { getImageUrls, uploadImage } from "../services/firbase.service";
 
 class ProductController {
   private static instance: ProductController;
@@ -14,10 +15,19 @@ class ProductController {
   }
 
   async getAll(req: Request, res: Response, next: NextFunction) {
-    const productRepository = getRepository(Product);
-    const products = await productRepository.find()
+    try {
+      const productRepository = getRepository(Product);
+      const products = await productRepository.find();
 
-    return res.send(products)
+      const productsWithImages = products.map(async (product) => ({
+        ...product,
+        images: await getImageUrls(`products/${product.id}`),
+      }));
+
+      return res.send({ success: true, data: await Promise.all(productsWithImages) });
+    } catch (err: any) {
+      return res.status(500).send({ success: false, message: err.message });
+    }
   }
 
   async getOne(req: Request, res: Response, next: NextFunction) {
@@ -34,17 +44,21 @@ class ProductController {
   }
 
   async create(req: Request, res: Response, next: NextFunction) {
-    // const { firstName, lastName, age } = req.body;
-    const productRepository = getRepository(Product);
-    const product = Object.assign(new Product(), {
-      title: 'Koshik',
-      sizes: '25, 26',
-      price: 500
-    });
+    try {
+      const productRepository = getRepository(Product);
+      console.log(req.body)
+      const product: Product = Object.assign(new Product(), { ...req.body });
 
-    const savedProduct = productRepository.save(product)
+      const savedProduct = await productRepository.save(product);
 
-    return res.send(savedProduct)
+      for (let i = 0; i < +req.files.length; i++) {
+        await uploadImage(req.files[i].buffer, `products/${savedProduct.id}/${i}`);
+      }
+
+      return res.send({ success: true, data: savedProduct });
+    } catch (err: any) {
+      return res.status(500).send({ message: err.message, result: false });
+    }
   }
 
   async remove(req: Request, res: Response, next: NextFunction) {

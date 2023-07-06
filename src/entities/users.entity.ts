@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { UserStatus } from "../types/types/user.types";
 
 @Entity()
@@ -27,4 +27,10 @@ export class User {
     default: UserStatus.USER
   })
   status: UserStatus;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
 }
