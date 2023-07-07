@@ -1,82 +1,108 @@
-import { NextFunction, Request, Response } from "express";
-import { Product } from "../entities/products.entity";
-import { getRepository } from "typeorm";
-import { getImageUrls, uploadImage } from "../services/firbase.service";
-import { getQueries } from "../utils/getFilterQueries";
+import { NextFunction, Request, Response } from 'express'
+import { Product } from '../entities/products.entity'
+import { getRepository } from 'typeorm'
+import { getImageUrls, uploadImage } from '../services/firbase.service'
+import { getQueries } from '../utils/getFilterQueries'
 
 class ProductController {
-  private static instance: ProductController;
+  private static instance: ProductController
 
   static get(): ProductController {
     if (!ProductController.instance) {
-      ProductController.instance = new ProductController();
+      ProductController.instance = new ProductController()
     }
 
-    return ProductController.instance;
+    return ProductController.instance
   }
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const queries = getQueries(req);
+      const queries = getQueries(req)
 
-      const productRepository = getRepository(Product);
-      const products = await productRepository.find({ where: queries });
+      const productRepository = getRepository(Product)
+      const products = await productRepository.find({ where: queries })
 
       const productsWithImages = products.map(async (product) => ({
         ...product,
         images: await getImageUrls(`products/${product.id}`),
-      }));
+      }))
 
-      return res.send({ success: true, data: await Promise.all(productsWithImages) });
+      return res.send({
+        success: true,
+        data: await Promise.all(productsWithImages),
+      })
     } catch (err: any) {
-      return res.status(500).send({ success: false, message: err.message });
+      return res.status(500).send({ success: false, message: err.message })
     }
   }
 
   async getOne(req: Request, res: Response, next: NextFunction) {
-    const id = parseInt(req.params.id);
-    const productRepository = getRepository(Product);
+    const id = parseInt(req.params.id)
+    const productRepository = getRepository(Product)
     const product = await productRepository.findOne({
       where: { id },
-    });
+    })
 
     if (!product) {
-      return "unregistered product";
+      return 'unregistered product'
     }
-    return res.send(product);
+    return res.send(product)
   }
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const productRepository = getRepository(Product);
-      const product: Product = Object.assign(new Product(), { ...req.body });
+      const productRepository = getRepository(Product)
+      const product: Product = Object.assign(new Product(), { ...req.body })
 
-      const savedProduct = await productRepository.save(product);
+      const savedProduct = await productRepository.save(product)
 
       for (let i = 0; i < +req.files.length; i++) {
-        await uploadImage(req.files[i].buffer, `products/${savedProduct.id}/${i}`);
+        await uploadImage(
+          req.files[i].buffer,
+          `products/${savedProduct.id}/${i}`
+        )
       }
 
-      return res.send({ success: true, data: savedProduct });
+      return res.send({ success: true, data: savedProduct })
     } catch (err: any) {
-      return res.status(500).send({ message: err.message, result: false });
+      return res.status(500).send({ message: err.message, result: false })
+    }
+  }
+
+  async update(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params
+
+      const productRepository = getRepository(Product)
+      const product: Product = await productRepository.findOneOrFail({
+        where: { id: +id },
+      })
+
+      const savedProduct = await productRepository.save({
+        ...product,
+        ...req.body,
+      })
+
+      return res.send({ success: true, data: savedProduct })
+    } catch (err: any) {
+      return res.status(500).send({ message: err.message, result: false })
     }
   }
 
   async remove(req: Request, res: Response, next: NextFunction) {
-    const id = parseInt(req.params.id);
-    const productRepository = getRepository(Product);
-    let productToRemove = await productRepository.findOneBy({ id });
+    const id = parseInt(req.params.id)
+    const productRepository = getRepository(Product)
+    let productToRemove = await productRepository.findOneBy({ id })
 
     if (!productToRemove) {
-      return "this product not exist";
+      return 'this product not exist'
     }
 
-    await productRepository.remove(productToRemove);
+    await productRepository.remove(productToRemove)
 
-    return "product has been removed";
+    return 'product has been removed'
   }
 }
 
-const productController = ProductController.get();
-export { productController as ProductController };
+const productController = ProductController.get()
+export { productController as ProductController }

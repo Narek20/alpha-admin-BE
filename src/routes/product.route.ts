@@ -1,34 +1,41 @@
-import { Router } from "express";
-import { ProductController } from "../controllers/product.controller";
-import multer from "multer";
+import { Router } from 'express'
+import { ProductController } from '../controllers/product.controller'
+import multer from 'multer'
 
-const storage = multer.memoryStorage(); // Store files in memory
-export const upload = multer({ storage: storage });
+const storage = multer.memoryStorage() // Store files in memory
+export const upload = multer({ storage: storage })
 
 /**
  * License Routes
  */
 class ProductRoutes {
-  private static instance: ProductRoutes;
-  public router: Router;
+  private static instance: ProductRoutes
+  public router: Router
 
   constructor() {
     // Initialize router
-    this.router = Router();
+    this.router = Router()
 
     this.router
-      .route("/")
+      .route('/')
       /**
        * get all products
        */
-      .get( ProductController.getAll);
+      .get(ProductController.getAll)
 
     this.router
-      .route("/create")
+      .route('/create')
       /**
        * Create a new product
        */
-      .post(upload.array("images"), ProductController.create);
+      .post(upload.array('images'), ProductController.create)
+
+    this.router
+      .route('/:id')
+      /**
+       * Update single product
+       */
+      .put(ProductController.update)
   }
 
   /**
@@ -38,12 +45,12 @@ class ProductRoutes {
    */
   static get(): ProductRoutes {
     if (!ProductRoutes.instance) {
-      ProductRoutes.instance = new ProductRoutes();
+      ProductRoutes.instance = new ProductRoutes()
     }
 
-    return ProductRoutes.instance;
+    return ProductRoutes.instance
   }
 }
 
-const productRoutes = ProductRoutes.get();
-export { productRoutes as ProductRoutes };
+const productRoutes = ProductRoutes.get()
+export { productRoutes as ProductRoutes }
