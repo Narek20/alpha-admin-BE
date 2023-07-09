@@ -35,6 +35,7 @@ class ProductRoutes {
       /**
        * Update single product
        */
+      .get(ProductController.getOne)
       .put(ProductController.update)
   }
 

@@ -44,9 +44,17 @@ class ProductController {
     })
 
     if (!product) {
-      return 'unregistered product'
+      return res
+        .status(400)
+        .send({ success: false, message: "Product wasn't found" })
     }
-    return res.send(product)
+
+    const productWithImages = {
+      ...product,
+      images: await getImageUrls(`products/${product.id}`),
+    }
+
+    return res.send({ success: true, data: productWithImages })
   }
 
   async create(req: Request, res: Response, next: NextFunction) {

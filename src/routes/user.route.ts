@@ -1,31 +1,31 @@
-import { Router } from "express";
-import { validate } from "../middleware/validate.middleware";
-import { UserController } from "../controllers/user.controller";
+import { Router } from 'express'
+import { validate } from '../middleware/validate.middleware'
+import { UserController } from '../controllers/user.controller'
 
 /**
  * License Routes
  */
 class UserRoutes {
-  private static instance: UserRoutes;
-  public router: Router;
+  private static instance: UserRoutes
+  public router: Router
 
   constructor() {
     // Initialize router
-    this.router = Router();
+    this.router = Router()
 
     this.router
-      .route("/")
+      .route('/')
       /**
        * get all users
        */
-      .get( UserController.getAll);
+      .get(UserController.getAll)
 
     this.router
-      .route("/create")
+      .route('/create')
       /**
        * Create a new user
        */
-      .post( UserController.create);
+      .post(UserController.create)
   }
 
   /**
@@ -35,12 +35,12 @@ class UserRoutes {
    */
   static get(): UserRoutes {
     if (!UserRoutes.instance) {
-      UserRoutes.instance = new UserRoutes();
+      UserRoutes.instance = new UserRoutes()
     }
 
-    return UserRoutes.instance;
+    return UserRoutes.instance
   }
 }
 
-const userRoutes = UserRoutes.get();
-export { userRoutes as UserRoutes };
+const userRoutes = UserRoutes.get()
+export { userRoutes as UserRoutes }
