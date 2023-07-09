@@ -37,6 +37,13 @@ export class Product {
     length: 255,
     nullable: true,
   })
+  selectedSizes: string
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
   smSizes: string
 
   @Column({

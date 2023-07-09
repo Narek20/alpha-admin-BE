@@ -59,7 +59,40 @@ class ProductController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
+      const {
+        title,
+        category,
+        brand,
+        price,
+        color,
+        smSizes,        purchasePrice,
+        clasp,
+        gender,
+        season,
+        country,
+      } = req.body
       const productRepository = getRepository(Product)
+
+      if (
+        !(
+          title &&
+          category &&
+          brand &&
+          price &&
+          color &&
+          smSizes &&
+          purchasePrice &&
+          clasp &&
+          gender &&
+          season &&
+          country
+        )
+      ) {
+        return res
+          .status(400)
+          .send("Պարամետրերը բացակայում են")
+      }
+
       const product: Product = Object.assign(new Product(), { ...req.body })
 
       const savedProduct = await productRepository.save(product)
@@ -71,7 +104,11 @@ class ProductController {
         )
       }
 
-      return res.send({ success: true, data: savedProduct })
+      return res.send({
+        message: 'Ապրանքները սարքված են',
+        success: true,
+        data: savedProduct,
+      })
     } catch (err: any) {
       return res.status(500).send({ message: err.message, result: false })
     }

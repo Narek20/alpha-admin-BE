@@ -1,6 +1,7 @@
 import { Router } from 'express'
-import { ProductController } from '../controllers/product.controller'
 import multer from 'multer'
+import { validate } from '../middleware/validate.middleware'
+import { ProductController } from '../controllers/product.controller'
 
 const storage = multer.memoryStorage() // Store files in memory
 export const upload = multer({ storage: storage })
