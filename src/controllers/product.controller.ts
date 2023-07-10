@@ -17,12 +17,17 @@ class ProductController {
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
+      const { take = 10, skip = 0 } = req.query
       const queries = getQueries(req)
 
       const productRepository = getRepository(Product)
-      const products = await productRepository.find({ where: queries })
+      const products = await productRepository.findAndCount({
+        where: queries,
+        take: +take,
+        skip: +skip * +take,
+      })
 
-      const productsWithImages = products.map(async (product) => ({
+      const productsWithImages = products[0].map(async (product) => ({
         ...product,
         images: await getImageUrls(`products/${product.id}`),
       }))
@@ -30,6 +35,11 @@ class ProductController {
       return res.send({
         success: true,
         data: await Promise.all(productsWithImages),
+        pagination: {
+          count: products[1],
+          take,
+          skip,
+        },
       })
     } catch (err: any) {
       return res.status(500).send({ success: false, message: err.message })
@@ -59,18 +69,9 @@ class ProductController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const {
-        title,
-        category,
-        brand,
-        price,
-        color,
-        smSizes,        purchasePrice,
-        clasp,
-        gender,
-        season,
-        country,
-      } = req.body
+      const { title, category, brand, price, purchasePrice } = req.body
+      const sizes = JSON.parse(req.body.sizes)
+
       const productRepository = getRepository(Product)
 
       if (
@@ -79,21 +80,17 @@ class ProductController {
           category &&
           brand &&
           price &&
-          color &&
-          smSizes &&
           purchasePrice &&
-          clasp &&
-          gender &&
-          season &&
-          country
+          req.files.length
         )
       ) {
-        return res
-          .status(400)
-          .send("Պարամետրերը բացակայում են")
+        return res.status(400).send('Պարամետրերը բացակայում են')
       }
 
-      const product: Product = Object.assign(new Product(), { ...req.body })
+      const product: Product = Object.assign(new Product(), {
+        ...req.body,
+        sizes,
+      })
 
       const savedProduct = await productRepository.save(product)
 
@@ -128,7 +125,11 @@ class ProductController {
         ...req.body,
       })
 
-      return res.send({ success: true, data: savedProduct })
+      return res.send({
+        success: true,
+        data: savedProduct,
+        message: 'Ապրանքը փոփոխված է',
+      })
     } catch (err: any) {
       return res.status(500).send({ message: err.message, result: false })
     }

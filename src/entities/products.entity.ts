@@ -6,6 +6,17 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 
+class Size {
+  @Column()
+  size: string
+
+  @Column()
+  smSize: string
+
+  @Column()
+  quantity: number
+}
+
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
@@ -26,25 +37,10 @@ export class Product {
   category: string
 
   @Column({
-    type: 'varchar',
-    length: 255,
+    type: 'json',
     nullable: true,
   })
-  sizes: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  selectedSizes: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  smSizes: string
+  sizes: Size[]
 
   @Column({
     type: 'varchar',
@@ -56,7 +52,7 @@ export class Product {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: false,
+    nullable: true,
   })
   clasp: string
 

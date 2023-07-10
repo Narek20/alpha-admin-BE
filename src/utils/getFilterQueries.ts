@@ -16,6 +16,8 @@ export const getQueries = (
         ...acc,
         [key]: Between(priceFilter.split(',')[0], priceFilter.split(',')[1]),
       }
+    } else if (key === 'skip' || key === 'take') {
+      return acc
     }
 
     return { ...acc, [key]: req.query[key] }
