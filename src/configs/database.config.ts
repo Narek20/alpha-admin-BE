@@ -12,6 +12,6 @@ export const DatabaseConfig = {
   password: env.databasePassword,
   username: env.databaseUsername,
   entities: [User, Product, Order],
-  synchronize: true,
+  synchronize: false,
   migrations: ['src/migrations'],
 }
