@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
 import { getRepository } from 'typeorm'
-import { getImageUrls, uploadImage } from '../services/firbase.service'
+import {
+  getImageUrls,
+  updateImages,
+  uploadImage,
+} from '../services/firbase.service'
 import { getQueries } from '../utils/getFilterQueries'
 
 class ProductController {
@@ -114,15 +118,30 @@ class ProductController {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params
-
       const productRepository = getRepository(Product)
       const product: Product = await productRepository.findOneOrFail({
         where: { id: +id },
       })
+      
+      let sizes = product.sizes
+      if(req.body.sizes) {
+        sizes = JSON.parse(req.body.sizes)
+      }
+
+      const imageBuffers: ArrayBuffer[] = []
+
+      for (let i = 0; i < +req.files.length; i++) {
+        imageBuffers.push(req.files[i].buffer)
+      }
+
+      if (req.body.images || +req.files.length) {
+        await updateImages(`products/${id}`, req.body.images, imageBuffers)
+      }
 
       const savedProduct = await productRepository.save({
         ...product,
         ...req.body,
+        sizes,
       })
 
       return res.send({

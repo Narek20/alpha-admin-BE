@@ -37,7 +37,7 @@ class ProductRoutes {
        * Update single product
        */
       .get(ProductController.getOne)
-      .put(ProductController.update)
+      .put(upload.array('images'), ProductController.update)
   }
 
   /**
