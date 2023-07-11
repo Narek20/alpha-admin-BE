@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.ts",
-    "typeorm": "typeorm-ts-node-commonjs -d ./src/DataSource/data.source.ts",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d ./src/DataSource/data.source.ts",
     "prod_start": "node ./build/index.js",
     "build": "npx tsc"
   },
