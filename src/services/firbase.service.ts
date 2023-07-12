@@ -84,3 +84,14 @@ export const updateImages = async (
     throw new Error(err.message)
   }
 }
+
+export const removeReference = async (filePath: string) => {
+  try {
+    const storageRef = ref(storage, filePath)
+    const items = await listAll(storageRef)
+
+    await Promise.all(items.items.map((item) => deleteObject(item)))
+  } catch (err) {
+    throw new Error(err.message)
+  }
+}

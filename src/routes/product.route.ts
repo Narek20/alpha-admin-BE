@@ -34,10 +34,17 @@ class ProductRoutes {
     this.router
       .route('/:id')
       /**
-       * Update single product
+       * Get single product
        */
       .get(ProductController.getOne)
+      /**
+       * Update single product
+       */
       .put(upload.array('images'), ProductController.update)
+      /**
+       * Remove single product
+       */
+      .delete(ProductController.remove)
   }
 
   /**

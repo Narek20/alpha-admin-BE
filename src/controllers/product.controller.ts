@@ -3,6 +3,7 @@ import { Product } from '../entities/products.entity'
 import { getRepository } from 'typeorm'
 import {
   getImageUrls,
+  removeReference,
   updateImages,
   uploadImage,
 } from '../services/firbase.service'
@@ -74,7 +75,11 @@ class ProductController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const { title, category, brand, price, purchasePrice } = req.body
-      const sizes = JSON.parse(req.body.sizes)
+      let sizes = null
+
+      if (req.body.sizes) {
+        sizes = JSON.parse(req.body.sizes)
+      }
 
       const productRepository = getRepository(Product)
 
@@ -88,7 +93,7 @@ class ProductController {
           req.files.length
         )
       ) {
-        return res.status(400).send('Պարամետրերը բացակայում են')
+        return res.status(400).send({ message: 'Պարամետրերը բացակայում են' })
       }
 
       const product: Product = Object.assign(new Product(), {
@@ -122,9 +127,9 @@ class ProductController {
       const product: Product = await productRepository.findOneOrFail({
         where: { id: +id },
       })
-      
+
       let sizes = product.sizes
-      if(req.body.sizes) {
+      if (req.body.sizes) {
         sizes = JSON.parse(req.body.sizes)
       }
 
@@ -155,17 +160,28 @@ class ProductController {
   }
 
   async remove(req: Request, res: Response, next: NextFunction) {
-    const id = parseInt(req.params.id)
-    const productRepository = getRepository(Product)
-    let productToRemove = await productRepository.findOneBy({ id })
+    try {
+      const id = parseInt(req.params.id)
+      const productRepository = getRepository(Product)
+      let productToRemove = await productRepository.findOneBy({ id })
 
-    if (!productToRemove) {
-      return 'this product not exist'
+      if (!productToRemove) {
+        return res.send({
+          success: false,
+          message: 'Ապրանքը չի գտնվել',
+        })
+      }
+
+      await removeReference(`products/${id}`)
+      await productRepository.remove(productToRemove)
+
+      return res.send({
+        success: true,
+        message: 'Ապրանքը Հեռացված է',
+      })
+    } catch (err) {
+      return res.status(500).send({ message: err.message, result: false })
     }
-
-    await productRepository.remove(productToRemove)
-
-    return 'product has been removed'
   }
 }
 
