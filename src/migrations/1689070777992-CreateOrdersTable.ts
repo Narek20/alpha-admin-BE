@@ -14,13 +14,13 @@ export class CreateOrdersTable1689070777992 implements MigrationInterface {
             generationStrategy: 'increment',
           },
           {
-            name: 'firstName',
+            name: 'fullName',
             type: 'varchar',
             length: '255',
             isNullable: false,
           },
           {
-            name: 'lastName',
+            name: 'phone',
             type: 'varchar',
             length: '255',
             isNullable: false,
@@ -29,9 +29,24 @@ export class CreateOrdersTable1689070777992 implements MigrationInterface {
             name: 'status',
             type: 'varchar',
             length: '255',
-            enum: ['user', 'admin'],
-            default: "'user'",
+            isNullable: false,
           },
+          {
+            name: 'address',
+            type: 'varchar',
+            length: '255',
+            isNullable: false,
+          },
+          {
+            name: 'createdAt',
+            type: 'timestamp',
+            default: 'CURRENT_TIMESTAMP',
+          },
+          {
+            name: 'updatedAt',
+            type: 'timestamp',
+            default: 'CURRENT_TIMESTAMP',
+          }
         ],
       })
     )

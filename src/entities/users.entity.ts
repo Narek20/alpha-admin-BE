@@ -1,36 +1,49 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
-import { UserStatus } from "../types/types/user.types";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm'
+import { UserStatus } from '../types/types/user.types'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
   @Column({
-    type: "varchar",
+    type: 'varchar',
     length: 255,
     nullable: false,
   })
-  firstName: string;
+  firstName: string
 
   @Column({
-    type: "varchar",
+    type: 'varchar',
     length: 255,
     nullable: false,
   })
-  lastName: string;
+  lastName: string
 
   @Column({
-    type: "varchar",
+    type: 'varchar',
+    length: 255,
+    nullable: false,
+  })
+  phone: string
+
+  @Column({
+    type: 'varchar',
     length: 255,
     enum: UserStatus,
-    default: UserStatus.USER
+    default: UserStatus.USER,
   })
-  status: UserStatus;
+  status: UserStatus
 
   @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date;
+  createdAt: Date
 
   @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt: Date;
+  updatedAt: Date
 }

@@ -30,6 +30,7 @@ class ProductController {
         where: queries,
         take: +take,
         skip: +skip * +take,
+        relations: ['orders']
       })
 
       const productsWithImages = products[0].map(async (product) => ({
