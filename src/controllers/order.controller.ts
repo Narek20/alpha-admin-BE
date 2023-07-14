@@ -1,67 +1,152 @@
-import { NextFunction, Request, Response } from "express";
-import { getRepository } from "typeorm";
-import { Order } from "../entities/orders.entity";
-import { Product } from "../entities/products.entity";
+import { NextFunction, Request, Response } from 'express'
+import { getRepository } from 'typeorm'
+import { Order } from '../entities/orders.entity'
+import { Product } from '../entities/products.entity'
+import { OrderProduct } from '../entities/orderProducts.entity'
+import { getImageUrls } from '../services/firbase.service'
 
 class OrderController {
-  private static instance: OrderController;
+  private static instance: OrderController
 
   static get(): OrderController {
     if (!OrderController.instance) {
-      OrderController.instance = new OrderController();
+      OrderController.instance = new OrderController()
     }
 
-    return OrderController.instance;
+    return OrderController.instance
   }
 
   async getAll(req: Request, res: Response, next: NextFunction) {
-    const orderRepository = getRepository(Order);
-    const orders = await orderRepository.find({ relations: ["products"] });
+    try {
+      const orderRepository = getRepository(Order)
+      const orders = await orderRepository
+        .createQueryBuilder('order')
+        .leftJoin('order.orderProducts', 'orderProduct')
+        .leftJoinAndSelect('orderProduct.product', 'product')
+        .select(['order', 'product', 'orderProduct.quantity'])
+        .getMany()
 
-    return res.send(orders);
+      return res.send({ success: true, data: orders })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
   }
 
   async getOne(req: Request, res: Response, next: NextFunction) {
-    const id = parseInt(req.params.id);
-    const orderRepository = getRepository(Order);
-    const order = await orderRepository.findOne({
-      where: { id },
-    });
+    try {
+      const id = parseInt(req.params.id)
+      const orderRepository = getRepository(Order)
+      const order = await orderRepository
+        .createQueryBuilder('order')
+        .leftJoin('order.orderProducts', 'orderProduct')
+        .leftJoinAndSelect('orderProduct.product', 'product')
+        .select(['order', 'product', 'orderProduct.quantity'])
+        .where('order.id = :id', { id })
+        .getOne()
 
-    if (!order) {
-      return "unregistered order";
+      let orderProducts = []
+
+      for (let i = 0; i < order.orderProducts.length; i++) {
+        const productImages = await getImageUrls(
+          `products/${order.orderProducts[i].product.id}`
+        )
+
+        orderProducts.push({
+          quantity: order.orderProducts[0].quantity,
+          product: { ...order.orderProducts[i].product, images: productImages },
+        })
+      }
+
+      if (!order) {
+        return res
+          .status(400)
+          .send({ success: false, message: "Order wasn't found" })
+      }
+
+      return res.send({ success: true, data: { ...order, orderProducts } })
+    } catch (err) {
+      return res.status(500).send({ success: false, message: err.message })
     }
-    return res.send(order);
   }
 
   async create(req: Request, res: Response, next: NextFunction) {
-    const orderRepository = getRepository(Order);
-    const productRepository = getRepository(Product);
+    try {
+      const { productIDs } = req.body
+      const orderRepository = getRepository(Order)
+      const productRepository = getRepository(Product)
 
-    const products = await productRepository.findByIds(req.body.productIDs);
+      const order: Order = Object.assign(new Order(), {
+        ...req.body,
+      })
 
-    const order = new Order();
-    order.products = products;
+      let orderProducts = []
 
-    const createdOrder = await orderRepository.save(order);
+      for (const { productId, quantity } of productIDs) {
+        const product = await productRepository.findOneOrFail({
+          where: { id: productId },
+        })
 
-    return res.send(createdOrder);
+        const orderProduct = new OrderProduct();
+        orderProduct.product = product;
+        orderProduct.quantity = quantity;
+  
+        orderProducts.push(orderProduct);
+      }
+
+
+      order.orderProducts = orderProducts
+
+      const createdOrder = await orderRepository.save(order)
+
+      return res.send({ success: false, data: createdOrder })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
+
+  async update(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = parseInt(req.params.id)
+      const orderRepository = getRepository(Order)
+
+      const order = await orderRepository.findOneOrFail({
+        where: { id },
+      })
+
+      const savedProduct = await orderRepository.save({
+        ...order,
+        ...req.body,
+      })
+
+      return res.send({ success: false, data: savedProduct })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
   }
 
   async remove(req: Request, res: Response, next: NextFunction) {
-    const id = parseInt(req.params.id);
-    const orderRepository = getRepository(Order);
-    let orderToRemove = await orderRepository.findOneBy({ id });
+    try {
+      const id = parseInt(req.params.id)
+      const orderRepository = getRepository(Order)
 
-    if (!orderToRemove) {
-      return "this Order not exist";
+      const orderToRemove = await orderRepository.findOneBy({ id })
+
+      if (!orderToRemove) {
+        return res
+          .status(400)
+          .send({ success: false, message: 'Ապրանքը չի գտնվել' })
+      }
+
+      await orderRepository.remove(orderToRemove)
+
+      return res
+        .status(500)
+        .send({ success: true, message: 'Ապրանքը հեռացված է' })
+    } catch (err) {
+      return res.status(500).send({ success: false, message: err.message })
     }
-
-    await orderRepository.remove(orderToRemove);
-
-    return "Order has been removed";
   }
 }
 
-const orderController = OrderController.get();
-export { orderController as OrderController };
+const orderController = OrderController.get()
+export { orderController as OrderController }

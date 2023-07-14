@@ -4,7 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm'
+import { Order } from './orders.entity'
 
 class Size {
   @Column()
@@ -25,14 +28,12 @@ export class Product {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: false,
   })
   title: string
 
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: false,
   })
   category: string
 
@@ -45,7 +46,6 @@ export class Product {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: false,
   })
   brand: string
 
@@ -113,13 +113,11 @@ export class Product {
 
   @Column({
     type: 'int',
-    nullable: false,
   })
   price: number
 
   @Column({
     type: 'int',
-    nullable: false,
   })
   purchasePrice: number
 
@@ -128,4 +126,8 @@ export class Product {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date
+
+  @ManyToMany(() => Order)
+  @JoinTable({ name: 'order_product' })
+  orders: Order[]
 }
