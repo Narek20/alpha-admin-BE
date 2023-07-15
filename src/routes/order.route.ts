@@ -32,6 +32,14 @@ class OrderRoutes {
        * Get single order
        */
       .get(OrderController.getOne)
+      /**
+       * Update single order
+       */
+      .put(OrderController.update)
+      /**
+       * Remove single order
+       */
+      .delete(OrderController.remove)
   }
 
   /**
