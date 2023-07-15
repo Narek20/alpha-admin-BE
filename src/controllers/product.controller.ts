@@ -7,7 +7,7 @@ import {
   updateImages,
   uploadImage,
 } from '../services/firbase.service'
-import { getQueries } from '../utils/getFilterQueries'
+import { getProductQueries } from '../utils/getFilterQueries'
 
 class ProductController {
   private static instance: ProductController
@@ -23,7 +23,7 @@ class ProductController {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const { take = 10, skip = 0 } = req.query
-      const queries = getQueries(req)
+      const queries = getProductQueries(req)
 
       const productRepository = getRepository(Product)
       const products = await productRepository.findAndCount({

@@ -4,6 +4,8 @@ import { Order } from '../entities/orders.entity'
 import { Product } from '../entities/products.entity'
 import { OrderProduct } from '../entities/orderProducts.entity'
 import { getImageUrls } from '../services/firbase.service'
+import { getOrderQueries } from '../utils/getFilterQueries'
+import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
 
 class OrderController {
   private static instance: OrderController
@@ -18,15 +20,35 @@ class OrderController {
 
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const orderRepository = getRepository(Order)
-      const orders = await orderRepository
-        .createQueryBuilder('order')
-        .leftJoin('order.orderProducts', 'orderProduct')
-        .leftJoinAndSelect('orderProduct.product', 'product')
-        .select(['order', 'product', 'orderProduct.quantity'])
-        .getMany()
+      const { take = 10, skip = 0 } = req.query
+      const queries = getOrderQueries(req)
 
-      return res.send({ success: true, data: orders })
+      const orderRepository = getRepository(Order)
+      const orders = await orderRepository.find({
+        where: queries,
+        skip: +skip,
+        take: +take,
+        order: {
+          createdAt: 'DESC',
+        },
+      })
+
+      const options: DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      }
+
+      const formattedOrders = orders.map((order) => {
+        const date = new Date(order.createdAt)
+        const formattedDate = date.toLocaleString('en-GB', options)
+
+        return { ...order, formattedDate }
+      })
+
+      return res.send({ success: true, data: formattedOrders })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
@@ -72,6 +94,7 @@ class OrderController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const { productIDs } = req.body
+
       const orderRepository = getRepository(Order)
       const productRepository = getRepository(Product)
 
@@ -86,13 +109,12 @@ class OrderController {
           where: { id: productId },
         })
 
-        const orderProduct = new OrderProduct();
-        orderProduct.product = product;
-        orderProduct.quantity = quantity;
-  
-        orderProducts.push(orderProduct);
-      }
+        const orderProduct = new OrderProduct()
+        orderProduct.product = product
+        orderProduct.quantity = quantity
 
+        orderProducts.push(orderProduct)
+      }
 
       order.orderProducts = orderProducts
 
@@ -118,7 +140,11 @@ class OrderController {
         ...req.body,
       })
 
-      return res.send({ success: false, data: savedProduct })
+      return res.send({
+        success: true,
+        data: savedProduct,
+        message: 'Ապրանքը հաջողությամբ թարմացված է',
+      })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
@@ -129,7 +155,9 @@ class OrderController {
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
 
-      const orderToRemove = await orderRepository.findOneBy({ id })
+      const orderToRemove = await orderRepository.findOneOrFail({
+        where: { id },
+      })
 
       if (!orderToRemove) {
         return res
@@ -139,9 +167,7 @@ class OrderController {
 
       await orderRepository.remove(orderToRemove)
 
-      return res
-        .status(500)
-        .send({ success: true, message: 'Ապրանքը հեռացված է' })
+      return res.send({ success: true, message: 'Ապրանքը հեռացված է' })
     } catch (err) {
       return res.status(500).send({ success: false, message: err.message })
     }
