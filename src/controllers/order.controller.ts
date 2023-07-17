@@ -6,6 +6,7 @@ import { OrderProduct } from '../entities/orderProducts.entity'
 import { getImageUrls } from '../services/firbase.service'
 import { getOrderQueries } from '../utils/getFilterQueries'
 import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
+import { OrderStatuses } from '../types/types/order.types'
 
 class OrderController {
   private static instance: OrderController
@@ -66,6 +67,12 @@ class OrderController {
         .where('order.id = :id', { id })
         .getOne()
 
+      if (!order) {
+        return res
+          .status(400)
+          .send({ success: false, message: "Order wasn't found" })
+      }
+
       let orderProducts = []
 
       for (let i = 0; i < order.orderProducts.length; i++) {
@@ -79,13 +86,21 @@ class OrderController {
         })
       }
 
-      if (!order) {
-        return res
-          .status(400)
-          .send({ success: false, message: "Order wasn't found" })
+      const options: DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
       }
 
-      return res.send({ success: true, data: { ...order, orderProducts } })
+      const date = new Date(order.createdAt)
+      const formattedDate = date.toLocaleString('en-GB', options)
+
+      return res.send({
+        success: true,
+        data: { ...order, formattedDate, orderProducts },
+      })
     } catch (err) {
       return res.status(500).send({ success: false, message: err.message })
     }
@@ -93,7 +108,7 @@ class OrderController {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const { productIDs } = req.body
+      const { fullName, phone, address, productIDs } = req.body
 
       const orderRepository = getRepository(Order)
       const productRepository = getRepository(Product)
@@ -104,23 +119,42 @@ class OrderController {
 
       let orderProducts = []
 
-      for (const { productId, quantity } of productIDs) {
+      if (!(fullName && phone && address && productIDs.length)) {
+        return res.status(400).send({ message: 'Պարամետրերը բացակայում են' })
+      }
+
+      for (let i = 0; i < productIDs.length; i++) {
         const product = await productRepository.findOneOrFail({
-          where: { id: productId },
+          where: { id: productIDs[i].id },
         })
 
         const orderProduct = new OrderProduct()
         orderProduct.product = product
-        orderProduct.quantity = quantity
+        orderProduct.quantity = productIDs[i].quantity
 
         orderProducts.push(orderProduct)
       }
 
       order.orderProducts = orderProducts
+      order.status = OrderStatuses.RECEIVED
 
       const createdOrder = await orderRepository.save(order)
 
-      return res.send({ success: false, data: createdOrder })
+      const options: DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      }
+
+      const date = new Date(createdOrder.createdAt)
+      const formattedDate = date.toLocaleString('en-GB', options)
+
+      return res.send({
+        success: true,
+        data: { ...createdOrder, formattedDate },
+      })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
