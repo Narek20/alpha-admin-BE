@@ -1,5 +1,5 @@
 import { Request } from 'express'
-import { Between, FindOptionsWhere, Raw } from 'typeorm'
+import { Between, FindOptionsWhere, ILike } from 'typeorm'
 import { Product } from '../entities/products.entity'
 import { OrderStatuses } from '../types/types/order.types'
 
@@ -10,15 +10,7 @@ export const getProductQueries = (
 
   const filter = filterKeys.reduce((acc, key) => {
     if (key === 'title') {
-      return {
-        ...acc,
-        [key]: Raw(
-          (alias) =>
-            `${alias.toLowerCase()} Like %${req.query[key]
-              .toString()
-              .toLowerCase()}%`
-        ),
-      }
+      return { ...acc, [key]: ILike(`%${req.query[key]}%`) }
     } else if (key === 'price') {
       const priceFilter = req.query[key] as string
       return {
@@ -45,14 +37,18 @@ export const getOrderQueries = (
       if (req.query[key] === 'delivery') {
         return { ...acc, status: OrderStatuses.DELIVERY }
       }
-      return {...acc}
+      return { ...acc }
     } else if (key === 'price') {
       const priceFilter = req.query[key] as string
       return {
         ...acc,
         [key]: Between(priceFilter.split(',')[0], priceFilter.split(',')[1]),
       }
-    } else if (key === 'skip' || key === 'take') {
+    } else if (
+      key === 'skip' ||
+      key === 'take' ||
+      (key === 'status' && req.query[key] === 'Բոլորը')
+    ) {
       return acc
     }
 
