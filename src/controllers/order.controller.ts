@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { getRepository } from 'typeorm'
 import { Order } from '../entities/orders.entity'
 import { Product } from '../entities/products.entity'
@@ -19,7 +19,7 @@ class OrderController {
     return OrderController.instance
   }
 
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response) {
     try {
       const { take = 10, skip = 0 } = req.query
       const queries = getOrderQueries(req)
@@ -55,7 +55,7 @@ class OrderController {
     }
   }
 
-  async getOne(req: Request, res: Response, next: NextFunction) {
+  async getOne(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
@@ -63,7 +63,12 @@ class OrderController {
         .createQueryBuilder('order')
         .leftJoin('order.orderProducts', 'orderProduct')
         .leftJoinAndSelect('orderProduct.product', 'product')
-        .select(['order', 'product', 'orderProduct.quantity'])
+        .select([
+          'order',
+          'product',
+          'orderProduct.quantity',
+          'orderProduct.size',
+        ])
         .where('order.id = :id', { id })
         .getOne()
 
@@ -81,7 +86,8 @@ class OrderController {
         )
 
         orderProducts.push({
-          quantity: order.orderProducts[0].quantity,
+          quantity: order.orderProducts[i].quantity,
+          size: order.orderProducts[i].size,
           product: { ...order.orderProducts[i].product, images: productImages },
         })
       }
@@ -106,9 +112,9 @@ class OrderController {
     }
   }
 
-  async create(req: Request, res: Response, next: NextFunction) {
+  async create(req: Request, res: Response) {
     try {
-      const { fullName, phone, address, productIDs } = req.body
+      const { fullName, phone, city, address, productIDs } = req.body
 
       const orderRepository = getRepository(Order)
       const productRepository = getRepository(Product)
@@ -119,7 +125,7 @@ class OrderController {
 
       let orderProducts = []
 
-      if (!(fullName && phone && address && productIDs.length)) {
+      if (!(fullName && phone && city && address && productIDs.length)) {
         return res.status(400).send({ message: 'Պարամետրերը բացակայում են' })
       }
 
@@ -131,6 +137,7 @@ class OrderController {
         const orderProduct = new OrderProduct()
         orderProduct.product = product
         orderProduct.quantity = productIDs[i].quantity
+        orderProduct.size = productIDs[i].size
 
         orderProducts.push(orderProduct)
       }
@@ -160,7 +167,7 @@ class OrderController {
     }
   }
 
-  async update(req: Request, res: Response, next: NextFunction) {
+  async update(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
@@ -184,7 +191,7 @@ class OrderController {
     }
   }
 
-  async remove(req: Request, res: Response, next: NextFunction) {
+  async remove(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)

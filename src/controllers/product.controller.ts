@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
 import { getRepository } from 'typeorm'
 import {
@@ -20,7 +20,7 @@ class ProductController {
     return ProductController.instance
   }
 
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: Request, res: Response) {
     try {
       const { take = 10, skip = 0 } = req.query
       const queries = getProductQueries(req)
@@ -52,7 +52,7 @@ class ProductController {
     }
   }
 
-  async getOne(req: Request, res: Response, next: NextFunction) {
+  async getOne(req: Request, res: Response) {
     const id = parseInt(req.params.id)
     const productRepository = getRepository(Product)
     const product = await productRepository.findOne({
@@ -73,7 +73,7 @@ class ProductController {
     return res.send({ success: true, data: productWithImages })
   }
 
-  async create(req: Request, res: Response, next: NextFunction) {
+  async create(req: Request, res: Response) {
     try {
       const { title, category, brand, price, purchasePrice } = req.body
       let sizes = null
@@ -121,7 +121,7 @@ class ProductController {
     }
   }
 
-  async update(req: Request, res: Response, next: NextFunction) {
+  async update(req: Request, res: Response) {
     try {
       const { id } = req.params
       const productRepository = getRepository(Product)
@@ -160,7 +160,7 @@ class ProductController {
     }
   }
 
-  async remove(req: Request, res: Response, next: NextFunction) {
+  async remove(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id)
       const productRepository = getRepository(Product)
