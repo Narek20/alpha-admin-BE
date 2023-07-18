@@ -34,7 +34,20 @@ export class Order {
     type: 'varchar',
     length: 255,
   })
+  city: string
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
   address: string
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  notes: string
 
   @Column({
     type: 'varchar',
