@@ -1,12 +1,14 @@
 import { Request, Response } from 'express'
 import { getRepository } from 'typeorm'
 import { Order } from '../entities/orders.entity'
+import { Driver } from '../entities/driver.entity'
 import { Product } from '../entities/products.entity'
 import { OrderProduct } from '../entities/orderProducts.entity'
 import { getImageUrls } from '../services/firbase.service'
 import { getOrderQueries } from '../utils/getFilterQueries'
-import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
+import { DriverStatus } from '../types/types/driver.types'
 import { OrderStatuses } from '../types/types/order.types'
+import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
 
 class OrderController {
   private static instance: OrderController
@@ -34,19 +36,22 @@ class OrderController {
         },
       })
 
-      const options: DateTimeFormatOptions = {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-      }
-
       const formattedOrders = orders.map((order) => {
-        const date = new Date(order.createdAt)
-        const formattedDate = date.toLocaleString('en-GB', options)
+        let deliveryDate: string | Date = order.deliveryDate
+        if (deliveryDate) {
+          const deliveryNewDate = new Date(
+            order.deliveryDate.getTime() + 24 * 1000 * 60 * 60
+          )
 
-        return { ...order, formattedDate }
+          deliveryDate = deliveryNewDate.toISOString().split('T')[0]
+        }
+
+        const createdAtDate = new Date(
+          order.createdAt.getTime() + 24 * 1000 * 60 * 60
+        )
+
+        const createdAt = createdAtDate.toISOString().split('T')[0]
+        return { ...order, createdAt, deliveryDate }
       })
 
       return res.send({ success: true, data: formattedOrders })
@@ -96,16 +101,20 @@ class OrderController {
         year: 'numeric',
         month: 'numeric',
         day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
       }
 
-      const date = new Date(order.createdAt)
-      const formattedDate = date.toLocaleString('en-GB', options)
+      let deliveryDate: Date | string = order.deliveryDate
+
+      if (deliveryDate) {
+        const date = new Date(deliveryDate)
+        deliveryDate = date.toLocaleString('en-GB', options)
+      }
+      const createdNewDate = new Date(order.createdAt)
+      const formattedDate = createdNewDate.toLocaleString('en-GB', options)
 
       return res.send({
         success: true,
-        data: { ...order, formattedDate, orderProducts },
+        data: { ...order, formattedDate, deliveryDate, orderProducts },
       })
     } catch (err) {
       return res.status(500).send({ success: false, message: err.message })
@@ -114,18 +123,38 @@ class OrderController {
 
   async create(req: Request, res: Response) {
     try {
-      const { fullName, phone, city, address, productIDs } = req.body
+      let { fullName, deliveryDate, phone, driver, address, productIDs } =
+        req.body
 
       const orderRepository = getRepository(Order)
+      const driverRepository = getRepository(Driver)
       const productRepository = getRepository(Product)
 
       const order: Order = Object.assign(new Order(), {
         ...req.body,
       })
 
+      if (driver) {
+        const orderDriver = await driverRepository.findOne({
+          where: { fullName: driver },
+        })
+
+        if (!orderDriver) {
+          return res.status(400).send({ message: 'Առաքիչը բացակայում է' })
+        }
+
+        if (orderDriver.status === DriverStatus.DELIVERY) {
+          return res.status(400).send({ message: 'Առաքիչը Զբաղված է' })
+        }
+
+        orderDriver.status = DriverStatus.DELIVERY
+
+        await driverRepository.save(orderDriver)
+      }
+
       let orderProducts = []
 
-      if (!(fullName && phone && city && address && productIDs.length)) {
+      if (!(fullName && phone && address && productIDs.length)) {
         return res.status(400).send({ message: 'Պարամետրերը բացակայում են' })
       }
 
@@ -138,8 +167,16 @@ class OrderController {
         orderProduct.product = product
         orderProduct.quantity = productIDs[i].quantity
         orderProduct.size = productIDs[i].size
+        orderProduct.orderId = order.id
+        orderProduct.productId = product.id
 
         orderProducts.push(orderProduct)
+      }
+
+      if (deliveryDate) {
+        deliveryDate = +new Date(deliveryDate)
+      } else {
+        deliveryDate = order.createdAt
       }
 
       order.orderProducts = orderProducts
@@ -169,22 +206,41 @@ class OrderController {
 
   async update(req: Request, res: Response) {
     try {
+      let { createdAt, deliveryDate, status } = req.body
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
+      const driverRepository = getRepository(Driver)
 
       const order = await orderRepository.findOneOrFail({
         where: { id },
       })
 
-      const savedProduct = await orderRepository.save({
+      if (status && status === OrderStatuses.COMPLETED) {
+        const driver = await driverRepository.findOne({
+          where: {
+            fullName: order.driver,
+          },
+        })
+        order.driver = null
+        driver.status = DriverStatus.FREE
+
+        await driverRepository.save(driver)
+      }
+
+      const savedOrder = await orderRepository.save({
         ...order,
+        createdAt: createdAt ? +new Date(createdAt) : order.createdAt,
+        deliveryDate: deliveryDate
+          ? +new Date(deliveryDate)
+          : order.deliveryDate,
         ...req.body,
+        orderProducts: order.orderProducts,
       })
 
       return res.send({
         success: true,
-        data: savedProduct,
-        message: 'Ապրանքը հաջողությամբ թարմացված է',
+        data: savedOrder,
+        message: 'Պատվերը հաջողությամբ թարմացված է',
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })
