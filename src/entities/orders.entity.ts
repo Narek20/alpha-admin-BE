@@ -34,12 +34,6 @@ export class Order {
     type: 'varchar',
     length: 255,
   })
-  city: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
   address: string
 
   @Column({
@@ -50,12 +44,24 @@ export class Order {
   notes: string
 
   @Column({
+    type: 'bool',
+    default: false,
+  })
+  isSpecial: boolean
+
+  @Column({
     type: 'varchar',
     length: 255,
     enum: OrderStatuses,
     default: OrderStatuses.RECEIVED,
   })
   status: OrderStatuses
+
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+  })
+  deliveryDate: string
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
