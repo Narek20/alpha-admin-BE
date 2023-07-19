@@ -58,10 +58,17 @@ export class Order {
   status: OrderStatuses
 
   @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  driver: string
+
+  @Column({
     type: 'timestamp',
     nullable: true,
   })
-  deliveryDate: string
+  deliveryDate: Date
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
