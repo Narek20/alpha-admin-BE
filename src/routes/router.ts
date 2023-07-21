@@ -3,6 +3,7 @@ import { UserRoutes } from './user.route'
 import { OrderRoutes } from './order.route'
 import { DriverRoutes } from './driver.route'
 import { ProductRoutes } from './product.route'
+import { StorageRoutes } from './storage.route'
 
 /**
  * Router Middleware
@@ -19,6 +20,7 @@ class Router {
       { segment: '/users', handler: UserRoutes.router },
       { segment: '/orders', handler: OrderRoutes.router },
       { segment: '/drivers', handler: DriverRoutes.router },
+      { segment: '/storages', handler: StorageRoutes.router },
       { segment: '/products', handler: ProductRoutes.router },
     ])
   }
