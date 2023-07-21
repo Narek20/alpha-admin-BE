@@ -70,6 +70,13 @@ export class Order {
   })
   deliveryDate: Date
 
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  paymentMethod: Date
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
 
