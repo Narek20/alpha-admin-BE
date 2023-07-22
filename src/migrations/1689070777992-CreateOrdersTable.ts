@@ -38,6 +38,34 @@ export class CreateOrdersTable1689070777992 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'notes',
+            type: 'varchar',
+            length: '255',
+            isNullable: true,
+          },
+          {
+            name: 'isSpecial',
+            type: 'bool',
+            default: false,
+          },
+          {
+            name: 'deliveryDate',
+            type: 'timestamp',
+            isNullable: true,
+          },
+          {
+            name: 'paymentMethod',
+            type: 'varchar',
+            length: '255',
+            isNullable: true,
+          },
+          {
+            name: 'driver',
+            type: 'varchar',
+            length: '255',
+            isNullable: true,
+          },
+          {
             name: 'createdAt',
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
@@ -46,9 +74,9 @@ export class CreateOrdersTable1689070777992 implements MigrationInterface {
             name: 'updatedAt',
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
-          }
+          },
         ],
-      })
+      }),
     )
   }
 

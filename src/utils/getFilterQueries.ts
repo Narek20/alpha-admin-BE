@@ -4,7 +4,7 @@ import { Product } from '../entities/products.entity'
 import { OrderStatuses } from '../types/types/order.types'
 
 export const getProductQueries = (
-  req: Request
+  req: Request,
 ): FindOptionsWhere<Product> | FindOptionsWhere<Product>[] => {
   const filterKeys = Object.keys(req.query)
 
@@ -28,7 +28,7 @@ export const getProductQueries = (
 }
 
 export const getOrderQueries = (
-  req: Request
+  req: Request,
 ): FindOptionsWhere<Product> | FindOptionsWhere<Product>[] => {
   const filterKeys = Object.keys(req.query)
 

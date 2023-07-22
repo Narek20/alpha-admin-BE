@@ -32,7 +32,7 @@ export class CreateDriversTable1689755763349 implements MigrationInterface {
             name: 'direction',
             type: 'varchar',
             length: '255',
-            isNullable: true
+            isNullable: true,
           },
           {
             name: 'createdAt',
@@ -40,7 +40,7 @@ export class CreateDriversTable1689755763349 implements MigrationInterface {
             default: 'CURRENT_TIMESTAMP',
           },
         ],
-      })
+      }),
     )
   }
 

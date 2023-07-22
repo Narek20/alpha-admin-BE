@@ -23,8 +23,18 @@ export class CreateOrdersProductsJoinTable1689071007866
             type: 'int',
             isNullable: false,
           },
+          {
+            name: 'quantity',
+            type: 'int',
+          },
+          {
+            name: 'size',
+            type: 'varchar',
+            length: '255',
+            isNullable: true,
+          },
         ],
-      })
+      }),
     )
 
     await queryRunner.createForeignKeys('order_product', [
@@ -46,11 +56,11 @@ export class CreateOrdersProductsJoinTable1689071007866
   public async down(queryRunner: QueryRunner): Promise<void> {
     const table = await queryRunner.getTable('order_product')
     const foreignKeyOrderId = table.foreignKeys.find(
-      (fk) => fk.columnNames.indexOf('orderId') !== -1
+      (fk) => fk.columnNames.indexOf('orderId') !== -1,
     )
-    
+
     const foreignKeyProductId = table.foreignKeys.find(
-      (fk) => fk.columnNames.indexOf('productId') !== -1
+      (fk) => fk.columnNames.indexOf('productId') !== -1,
     )
 
     await queryRunner.dropForeignKey('order_product', foreignKeyOrderId)

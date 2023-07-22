@@ -1,4 +1,4 @@
 export enum UserStatus {
   ADMIN = 'admin',
-  USER = 'user'
+  USER = 'user',
 }

@@ -20,12 +20,6 @@ export class CreateProductsTable1689067771594 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'category',
-            type: 'varchar',
-            length: '255',
-            isNullable: false,
-          },
-          {
             name: 'sizes',
             type: 'json',
             isNullable: true,
@@ -37,37 +31,7 @@ export class CreateProductsTable1689067771594 implements MigrationInterface {
             isNullable: false,
           },
           {
-            name: 'clasp',
-            type: 'varchar',
-            length: '255',
-            isNullable: true,
-          },
-          {
             name: 'rating',
-            type: 'varchar',
-            length: '255',
-            isNullable: true,
-          },
-          {
-            name: 'gender',
-            type: 'varchar',
-            length: '255',
-            isNullable: true,
-          },
-          {
-            name: 'season',
-            type: 'varchar',
-            length: '255',
-            isNullable: true,
-          },
-          {
-            name: 'weight',
-            type: 'varchar',
-            length: '255',
-            isNullable: true,
-          },
-          {
-            name: 'shoesHeight',
             type: 'varchar',
             length: '255',
             isNullable: true,
@@ -100,6 +64,17 @@ export class CreateProductsTable1689067771594 implements MigrationInterface {
             isNullable: false,
           },
           {
+            name: 'notes',
+            type: 'varchar',
+            length: '255',
+            isNullable: true,
+          },
+          {
+            name: 'additionalInfo',
+            type: 'json',
+            isNullable: true,
+          },
+          {
             name: 'createdAt',
             type: 'timestamp',
             default: 'CURRENT_TIMESTAMP',
@@ -110,7 +85,7 @@ export class CreateProductsTable1689067771594 implements MigrationInterface {
             default: 'CURRENT_TIMESTAMP',
           },
         ],
-      })
+      }),
     )
   }
 
