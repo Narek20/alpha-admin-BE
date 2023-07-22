@@ -68,11 +68,13 @@ class OrderController {
         .createQueryBuilder('order')
         .leftJoin('order.orderProducts', 'orderProduct')
         .leftJoinAndSelect('orderProduct.product', 'product')
+        .leftJoinAndSelect('product.category', 'category')
         .select([
           'order',
           'product',
           'orderProduct.quantity',
           'orderProduct.size',
+          'category',
         ])
         .where('order.id = :id', { id })
         .getOne()
@@ -184,11 +186,16 @@ class OrderController {
 
       const createdOrder = await orderRepository.save(order)
 
-      const createdAtDate = new Date(
-        createdOrder.createdAt.getTime() + 24 * 1000 * 60 * 60,
-      )
+      const options: DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      }
 
-      const formattedDate = createdAtDate.toISOString().split('T')[0]
+      const date = new Date(createdOrder.createdAt)
+      const formattedDate = date.toLocaleString('en-GB', options)
 
       return res.send({
         success: true,
