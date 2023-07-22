@@ -4,7 +4,7 @@ import { DatabaseConfig } from '../configs/database.config'
 export const databaseConnection = async () => {
   try {
     const connection = await createConnection(
-      DatabaseConfig as DataSourceOptions
+      DatabaseConfig as DataSourceOptions,
     )
     console.log('Connected to the database')
     // Add your code here

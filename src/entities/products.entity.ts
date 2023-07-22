@@ -6,8 +6,12 @@ import {
   UpdateDateColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm'
 import { Order } from './orders.entity'
+import { Category } from './category.entity'
 
 class Size {
   @Column()
@@ -20,6 +24,17 @@ class Size {
   quantity: number
 }
 
+class AdditionalInfo {
+  @Column()
+  title: string
+
+  @Column()
+  key: string
+
+  @Column()
+  value: string
+}
+
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
@@ -30,12 +45,6 @@ export class Product {
     length: 255,
   })
   title: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-  })
-  category: string
 
   @Column({
     type: 'json',
@@ -54,42 +63,7 @@ export class Product {
     length: 255,
     nullable: true,
   })
-  clasp: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
   rating: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  gender: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  season: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  weight: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  shoesHeight: string
 
   @Column({
     type: 'varchar',
@@ -120,6 +94,16 @@ export class Product {
     type: 'int',
   })
   purchasePrice: number
+
+  @Column({
+    type: 'json',
+    nullable: true,
+  })
+  additionalInfo: AdditionalInfo[]
+
+  @ManyToOne(() => Category)
+  @JoinTable({ name: 'category' })
+  category: Category
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date

@@ -51,7 +51,7 @@ export const getImageUrls = async (filePath: string) => {
 export const updateImages = async (
   filePath: string,
   updatedImages: string | string[],
-  newImages: ArrayBuffer[]
+  newImages: ArrayBuffer[],
 ) => {
   try {
     const images = Array.isArray(updatedImages)

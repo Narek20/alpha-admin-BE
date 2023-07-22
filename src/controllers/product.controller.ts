@@ -8,6 +8,7 @@ import {
   uploadImage,
 } from '../services/firbase.service'
 import { getProductQueries } from '../utils/getFilterQueries'
+import { Category } from '../entities/category.entity'
 
 class ProductController {
   private static instance: ProductController
@@ -30,7 +31,7 @@ class ProductController {
         where: queries,
         take: +take,
         skip: +skip * +take,
-        relations: ['orders']
+        relations: ['orders', 'category'],
       })
 
       const productsWithImages = products[0].map(async (product) => ({
@@ -57,6 +58,7 @@ class ProductController {
     const productRepository = getRepository(Product)
     const product = await productRepository.findOne({
       where: { id },
+      relations: ['category'],
     })
 
     if (!product) {
@@ -77,12 +79,18 @@ class ProductController {
     try {
       const { title, category, brand, price, purchasePrice } = req.body
       let sizes = null
+      let additionalInfo = null
 
       if (req.body.sizes) {
         sizes = JSON.parse(req.body.sizes)
       }
 
+      if (req.body.additionalInfo) {
+        additionalInfo = JSON.parse(req.body.additionalInfo)
+      }
+
       const productRepository = getRepository(Product)
+      const categoryRepository = getRepository(Category)
 
       if (
         !(
@@ -97,9 +105,15 @@ class ProductController {
         return res.status(400).send({ message: 'Պարամետրերը բացակայում են' })
       }
 
+      const selectedCategory = await categoryRepository.findOne({
+        where: { title: category },
+      })
+
       const product: Product = Object.assign(new Product(), {
         ...req.body,
         sizes,
+        category: selectedCategory,
+        additionalInfo,
       })
 
       const savedProduct = await productRepository.save(product)
@@ -107,14 +121,14 @@ class ProductController {
       for (let i = 0; i < +req.files.length; i++) {
         await uploadImage(
           req.files[i].buffer,
-          `products/${savedProduct.id}/${i}`
+          `products/${savedProduct.id}/${i}`,
         )
       }
 
       return res.send({
         message: 'Ապրանքները սարքված են',
         success: true,
-        data: savedProduct,
+        data: { savedProduct },
       })
     } catch (err: any) {
       return res.status(500).send({ message: err.message, result: false })

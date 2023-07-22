@@ -40,14 +40,14 @@ class OrderController {
         let deliveryDate: string | Date = order.deliveryDate
         if (deliveryDate) {
           const deliveryNewDate = new Date(
-            order.deliveryDate.getTime() + 24 * 1000 * 60 * 60
+            order.deliveryDate.getTime() + 24 * 1000 * 60 * 60,
           )
 
           deliveryDate = deliveryNewDate.toISOString().split('T')[0]
         }
 
         const createdAtDate = new Date(
-          order.createdAt.getTime() + 24 * 1000 * 60 * 60
+          order.createdAt.getTime() + 24 * 1000 * 60 * 60,
         )
 
         const createdAt = createdAtDate.toISOString().split('T')[0]
@@ -87,7 +87,7 @@ class OrderController {
 
       for (let i = 0; i < order.orderProducts.length; i++) {
         const productImages = await getImageUrls(
-          `products/${order.orderProducts[i].product.id}`
+          `products/${order.orderProducts[i].product.id}`,
         )
 
         orderProducts.push({
@@ -184,16 +184,11 @@ class OrderController {
 
       const createdOrder = await orderRepository.save(order)
 
-      const options: DateTimeFormatOptions = {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-      }
+      const createdAtDate = new Date(
+        createdOrder.createdAt.getTime() + 24 * 1000 * 60 * 60,
+      )
 
-      const date = new Date(createdOrder.createdAt)
-      const formattedDate = date.toLocaleString('en-GB', options)
+      const formattedDate = createdAtDate.toISOString().split('T')[0]
 
       return res.send({
         success: true,

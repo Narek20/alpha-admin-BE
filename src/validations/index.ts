@@ -1,5 +1,5 @@
-import { createUser } from "./user.validator";
+import { createUser } from './user.validator'
 
 export default {
   createUser,
-};
+}
