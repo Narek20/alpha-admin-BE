@@ -57,3 +57,15 @@ export const getOrderQueries = (
 
   return filter
 }
+
+export const getOrderSearch = (req: Request): string[] => {
+  const queries = req.query
+
+  if (queries.search && typeof queries.search === 'string') {
+    const searchValues = queries.search.split(' ')
+
+    return searchValues
+  }
+
+  return []
+}
