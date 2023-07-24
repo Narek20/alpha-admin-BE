@@ -20,6 +20,13 @@ class OrderRoutes {
       .get(OrderController.getAll)
 
     this.router
+      .route('/search')
+      /**
+       * Get all orders
+       */
+      .get(OrderController.searchOrders)
+
+    this.router
       .route('/create')
       /**
        * Create a new order

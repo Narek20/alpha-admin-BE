@@ -1,11 +1,11 @@
 import { Request, Response } from 'express'
-import { getRepository } from 'typeorm'
+import { Brackets, Like, getRepository } from 'typeorm'
 import { Order } from '../entities/orders.entity'
 import { Driver } from '../entities/driver.entity'
 import { Product } from '../entities/products.entity'
 import { OrderProduct } from '../entities/orderProducts.entity'
 import { getImageUrls } from '../services/firbase.service'
-import { getOrderQueries } from '../utils/getFilterQueries'
+import { getOrderQueries, getOrderSearch } from '../utils/getFilterQueries'
 import { DriverStatus } from '../types/types/driver.types'
 import { OrderStatuses } from '../types/types/order.types'
 import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
@@ -35,6 +35,90 @@ class OrderController {
           createdAt: 'DESC',
         },
       })
+
+      const formattedOrders = orders.map((order) => {
+        let deliveryDate: string | Date = order.deliveryDate
+        if (deliveryDate) {
+          const deliveryNewDate = new Date(
+            order.deliveryDate.getTime() + 24 * 1000 * 60 * 60,
+          )
+
+          deliveryDate = deliveryNewDate.toISOString().split('T')[0]
+        }
+
+        const createdAtDate = new Date(
+          order.createdAt.getTime() + 24 * 1000 * 60 * 60,
+        )
+
+        const createdAt = createdAtDate.toISOString().split('T')[0]
+        return { ...order, createdAt, deliveryDate }
+      })
+
+      return res.send({ success: true, data: formattedOrders })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
+
+  async searchOrders(req: Request, res: Response) {
+    try {
+      const searchTerms = getOrderSearch(req)
+      const orderRepository = getRepository(Order)
+      const queryBuilder = orderRepository.createQueryBuilder('order')
+      const order = await orderRepository.find()
+      const columns = Object.keys(order[0]).slice(1)
+
+      const orders = await queryBuilder
+        .where(
+          new Brackets((outerQb) => {
+            searchTerms.forEach((searchTerm, index) => {
+              if (index === 0) {
+                outerQb.where(
+                  new Brackets((innerQb) => {
+                    columns.forEach((column, columnIndex) => {
+                      if (
+                        column === 'isSpecial' ||
+                        column === 'createdAt' ||
+                        column === 'updatedAt' ||
+                        column === 'deliveryDate'
+                      ) {
+                        return
+                      }
+
+                      if (columnIndex === 0) {
+                        innerQb.where({ [column]: Like(`%${searchTerm}%`) })
+                      } else {
+                        innerQb.orWhere({ [column]: Like(`%${searchTerm}%`) })
+                      }
+                    })
+                  }),
+                )
+              } else {
+                outerQb.andWhere(
+                  new Brackets((innerQb) => {
+                    columns.forEach((column, columnIndex) => {
+                      if (
+                        column === 'isSpecial' ||
+                        column === 'createdAt' ||
+                        column === 'updatedAt' ||
+                        column === 'deliveryDate'
+                      ) {
+                        return
+                      }
+
+                      if (columnIndex === 0) {
+                        innerQb.where({ [column]: Like(`%${searchTerm}%`) })
+                      } else {
+                        innerQb.orWhere({ [column]: Like(`%${searchTerm}%`) })
+                      }
+                    })
+                  }),
+                )
+              }
+            })
+          }),
+        )
+        .getMany()
 
       const formattedOrders = orders.map((order) => {
         let deliveryDate: string | Date = order.deliveryDate
