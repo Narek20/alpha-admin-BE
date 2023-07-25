@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import { Note } from '../entities/note.entity'
 import { Order } from '../entities/orders.entity'
 import { Product } from '../entities/products.entity'
 import { Driver } from '../entities/driver.entity'
@@ -14,7 +15,7 @@ export const DatabaseConfig = {
   database: env.databaseName,
   password: env.databasePassword,
   username: env.databaseUsername,
-  entities: [Product, Order, OrderProduct, Driver, Storage, Category],
+  entities: [Product, Order, OrderProduct, Driver, Storage, Category, Note],
   synchronize: false,
   migrations: ['src/migrations'],
 }

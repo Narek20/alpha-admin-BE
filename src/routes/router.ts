@@ -1,5 +1,6 @@
 import { IRouter as RouterInstance, Router as ExpressRouter } from 'express'
 import { UserRoutes } from './user.route'
+import { NoteRoutes } from './note.route'
 import { OrderRoutes } from './order.route'
 import { DriverRoutes } from './driver.route'
 import { ProductRoutes } from './product.route'
@@ -19,6 +20,7 @@ class Router {
 
     this.map([
       { segment: '/users', handler: UserRoutes.router },
+      { segment: '/notes', handler: NoteRoutes.router },
       { segment: '/orders', handler: OrderRoutes.router },
       { segment: '/drivers', handler: DriverRoutes.router },
       { segment: '/storages', handler: StorageRoutes.router },
