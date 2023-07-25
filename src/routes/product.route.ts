@@ -45,6 +45,13 @@ class ProductRoutes {
        * Remove single product
        */
       .delete(ProductController.remove)
+
+    this.router
+      .route('/search')
+      /**
+       * search items
+       */
+      .get(ProductController.search)
   }
 
   /**

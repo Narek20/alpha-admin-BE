@@ -1,14 +1,15 @@
 import { Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
-import { getRepository } from 'typeorm'
+import { Brackets, Like, getRepository } from 'typeorm'
 import {
   getImageUrls,
   removeReference,
   updateImages,
   uploadImage,
 } from '../services/firbase.service'
-import { getProductQueries } from '../utils/getFilterQueries'
+import { getOrderSearch, getProductQueries } from '../utils/getFilterQueries'
 import { Category } from '../entities/category.entity'
+import { Order } from '../entities/orders.entity'
 
 class ProductController {
   private static instance: ProductController
@@ -54,25 +55,98 @@ class ProductController {
   }
 
   async getOne(req: Request, res: Response) {
-    const id = parseInt(req.params.id)
-    const productRepository = getRepository(Product)
-    const product = await productRepository.findOne({
-      where: { id },
-      relations: ['category'],
-    })
+    try {
+      const id = parseInt(req.params.id)
+      const productRepository = getRepository(Product)
+      const product = await productRepository.findOne({
+        where: { id },
+        relations: ['category'],
+      })
 
-    if (!product) {
-      return res
-        .status(400)
-        .send({ success: false, message: "Product wasn't found" })
+      if (!product) {
+        return res
+          .status(400)
+          .send({ success: false, message: "Product wasn't found" })
+      }
+
+      const productWithImages = {
+        ...product,
+        images: await getImageUrls(`products/${product.id}`),
+      }
+
+      return res.send({ success: true, data: productWithImages })
+    } catch (err: any) {
+      return res.status(500).send({ success: false, message: err.message })
     }
+  }
 
-    const productWithImages = {
-      ...product,
-      images: await getImageUrls(`products/${product.id}`),
+  async search(req: Request, res: Response) {
+    try {
+      const searchTerms = getOrderSearch(req)
+      const orderRepository = getRepository(Order)
+      const queryBuilder = orderRepository.createQueryBuilder('order')
+      const order = await orderRepository.find()
+      const columns = Object.keys(order[0]).slice(1)
+
+      const orders = await queryBuilder
+        .where(
+          new Brackets((outerQb) => {
+            searchTerms.forEach((searchTerm, index) => {
+              if (index === 0) {
+                outerQb.where(
+                  new Brackets((innerQb) => {
+                    columns.forEach((column, columnIndex) => {
+                      if (
+                        column === 'isSpecial' ||
+                        column === 'createdAt' ||
+                        column === 'updatedAt' ||
+                        column === 'deliveryDate'
+                      ) {
+                        return
+                      }
+
+                      if (columnIndex === 0) {
+                        innerQb.where({ [column]: Like(`%${searchTerm}%`) })
+                      } else {
+                        innerQb.orWhere({ [column]: Like(`%${searchTerm}%`) })
+                      }
+                    })
+                  }),
+                )
+              } else {
+                outerQb.andWhere(
+                  new Brackets((innerQb) => {
+                    columns.forEach((column, columnIndex) => {
+                      if (
+                        column === 'isSpecial' ||
+                        column === 'createdAt' ||
+                        column === 'updatedAt' ||
+                        column === 'deliveryDate'
+                      ) {
+                        return
+                      }
+
+                      if (columnIndex === 0) {
+                        innerQb.where({ [column]: Like(`%${searchTerm}%`) })
+                      } else {
+                        innerQb.orWhere({ [column]: Like(`%${searchTerm}%`) })
+                      }
+                    })
+                  }),
+                )
+              }
+            })
+          }),
+        )
+        .getMany()
+
+      return res.send({
+        success: true,
+        data: orders,
+      })
+    } catch (err: any) {
+      return res.status(500).send({ success: false, message: err.message })
     }
-
-    return res.send({ success: true, data: productWithImages })
   }
 
   async create(req: Request, res: Response) {
