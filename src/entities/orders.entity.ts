@@ -52,10 +52,9 @@ export class Order {
   @Column({
     type: 'varchar',
     length: 255,
-    enum: OrderStatuses,
     default: OrderStatuses.RECEIVED,
   })
-  status: OrderStatuses
+  status: string
 
   @Column({
     type: 'varchar',

@@ -296,12 +296,11 @@ class OrderController {
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
       const driverRepository = getRepository(Driver)
-
       const order = await orderRepository.findOneOrFail({
         where: { id },
       })
 
-      if (status && status === OrderStatuses.COMPLETED) {
+      if (status && order.driver && status === OrderStatuses.COMPLETED) {
         const driver = await driverRepository.findOne({
           where: {
             fullName: order.driver,
@@ -315,11 +314,12 @@ class OrderController {
 
       const savedOrder = await orderRepository.save({
         ...order,
+        ...req.body,
+        status,
         createdAt: createdAt ? +new Date(createdAt) : order.createdAt,
         deliveryDate: deliveryDate
           ? +new Date(deliveryDate)
           : order.deliveryDate,
-        ...req.body,
         orderProducts: order.orderProducts,
       })
 
