@@ -9,6 +9,7 @@ import { getOrderQueries, getOrderSearch } from '../utils/getFilterQueries'
 import { DriverStatus } from '../types/types/driver.types'
 import { OrderStatuses } from '../types/types/order.types'
 import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
+import { Customer } from '../entities/customer.entity'
 
 class OrderController {
   private static instance: OrderController
@@ -215,10 +216,26 @@ class OrderController {
       const orderRepository = getRepository(Order)
       const driverRepository = getRepository(Driver)
       const productRepository = getRepository(Product)
+      const customerRepository = getRepository(Customer)
 
       const order: Order = Object.assign(new Order(), {
         ...req.body,
       })
+
+      if (fullName && phone) {
+        const customer = await customerRepository.findOne({
+          where: { phone, fullName },
+        })
+
+        if (!customer) {
+          const customer: Customer = Object.assign(new Customer(), {
+            fullName,
+            phone,
+          })
+
+          await customerRepository.save(customer)
+        }
+      }
 
       if (driver) {
         const orderDriver = await driverRepository.findOne({

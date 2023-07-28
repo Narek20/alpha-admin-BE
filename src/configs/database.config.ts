@@ -5,6 +5,7 @@ import { Product } from '../entities/products.entity'
 import { Driver } from '../entities/driver.entity'
 import { Storage } from '../entities/storage.entity'
 import { Category } from '../entities/category.entity'
+import { Customer } from '../entities/customer.entity'
 import { OrderProduct } from '../entities/orderProducts.entity'
 import env from '../env/env.variables'
 
@@ -15,7 +16,16 @@ export const DatabaseConfig = {
   database: env.databaseName,
   password: env.databasePassword,
   username: env.databaseUsername,
-  entities: [Product, Order, OrderProduct, Driver, Storage, Category, Note],
+  entities: [
+    Product,
+    Order,
+    OrderProduct,
+    Driver,
+    Storage,
+    Category,
+    Note,
+    Customer,
+  ],
   synchronize: false,
   migrations: ['src/migrations'],
 }

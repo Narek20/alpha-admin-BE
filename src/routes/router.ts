@@ -5,6 +5,7 @@ import { OrderRoutes } from './order.route'
 import { DriverRoutes } from './driver.route'
 import { ProductRoutes } from './product.route'
 import { StorageRoutes } from './storage.route'
+import { CustomerRoutes } from './customer.route'
 import { CategoryRoutes } from './category.route'
 
 /**
@@ -25,6 +26,7 @@ class Router {
       { segment: '/drivers', handler: DriverRoutes.router },
       { segment: '/storages', handler: StorageRoutes.router },
       { segment: '/products', handler: ProductRoutes.router },
+      { segment: '/customers', handler: CustomerRoutes.router },
       { segment: '/categories', handler: CategoryRoutes.router },
     ])
   }
