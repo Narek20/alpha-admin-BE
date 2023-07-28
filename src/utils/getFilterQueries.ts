@@ -9,7 +9,7 @@ export const getProductQueries = (
   const filterKeys = Object.keys(req.query)
 
   const filter = filterKeys.reduce((acc, key) => {
-    if (key === 'title') {
+    if (key === 'title' || key === 'brand') {
       return { ...acc, [key]: ILike(`%${req.query[key]}%`) }
     } else if (key === 'price') {
       const priceFilter = req.query[key] as string

@@ -18,6 +18,10 @@ class CategoryRoutes {
        * Get all categories
        */
       .get(CategoryController.getAll)
+      /**
+       * Update single category
+       */
+      .put(CategoryController.update)
 
     this.router
       .route('/create')
@@ -28,10 +32,6 @@ class CategoryRoutes {
 
     this.router
       .route('/:id')
-      /**
-       * Update single category
-       */
-      .put(CategoryController.update)
       /**
        * Remove single category
        */

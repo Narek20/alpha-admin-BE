@@ -46,22 +46,36 @@ class CategoryController {
 
   async update(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id)
+      const updatedCategories: Category[] = req.body
       const categoryRepository = getRepository(Category)
 
-      const category = await categoryRepository.findOneOrFail({
-        where: { id },
-      })
+      const categories = await categoryRepository.find({})
 
-      const savedCategory = await categoryRepository.save({
-        ...category,
-        ...req.body,
-      })
+      for (let i = 0; i < categories.length; i++) {
+        const updatedCategory = updatedCategories.find(
+          (category) => category.title === categories[i].title,
+        )
+
+        if (updatedCategory) {
+          await categoryRepository.save(updatedCategory)
+        } else {
+          await categoryRepository.remove(categories[i])
+        }
+      }
+
+      for (let i = 0; i < updatedCategories.length; i++) {
+        if (!updatedCategories[i].id) {
+          const category: Category = Object.assign(new Category(), {
+            ...updatedCategories[i],
+          })
+
+          await categoryRepository.save(category)
+        }
+      }
 
       return res.send({
         success: true,
-        data: savedCategory,
-        message: 'Կատեգորիան պահպանված է',
+        message: 'Կատեգորիաները պահպանված են',
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })
