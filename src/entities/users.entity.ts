@@ -17,14 +17,7 @@ export class User {
     length: 255,
     nullable: false,
   })
-  firstName: string
-
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: false,
-  })
-  lastName: string
+  fullName: string
 
   @Column({
     type: 'varchar',
@@ -43,7 +36,4 @@ export class User {
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
-
-  @UpdateDateColumn({ type: 'timestamp' })
-  updatedAt: Date
 }

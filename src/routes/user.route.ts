@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { validate } from '../middleware/validate.middleware'
 import { UserController } from '../controllers/user.controller'
+import { verifyToken } from '../middleware/auth.middleware'
 
 /**
  * License Routes
@@ -18,7 +18,21 @@ class UserRoutes {
       /**
        * get all users
        */
-      .get(UserController.getAll)
+      .get(verifyToken, UserController.getAll)
+
+    this.router
+      .route('/one')
+      /**
+       * get single user
+       */
+      .get(verifyToken, UserController.getOne)
+
+    this.router
+      .route('/:phone')
+      /**
+       * get single user
+       */
+      .get(UserController.getUserByPhoneNumber)
 
     this.router
       .route('/create')
