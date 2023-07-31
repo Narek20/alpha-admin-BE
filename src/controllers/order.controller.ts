@@ -333,10 +333,8 @@ class OrderController {
         ...order,
         ...req.body,
         status,
-        createdAt: createdAt ? +new Date(createdAt) : order.createdAt,
-        deliveryDate: deliveryDate
-          ? +new Date(deliveryDate)
-          : order.deliveryDate,
+        createdAt: new Date(req.body.createdAt) || order.createdAt,
+        deliveryDate: new Date(req.body.deliveryDate) || order.deliveryDate,
         orderProducts: order.orderProducts,
       })
 
