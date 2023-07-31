@@ -17,7 +17,6 @@ export const verifyToken = (
 
     if (typeof token === 'string' && env.jwtSecret) {
       const decoded = jwt.verify(token, env.jwtSecret)
-      console.log(decoded)
       req.decodedToken = decoded as string
       next()
     }

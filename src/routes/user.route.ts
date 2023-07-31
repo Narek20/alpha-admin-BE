@@ -40,6 +40,17 @@ class UserRoutes {
        * Create a new user
        */
       .post(UserController.create)
+
+    this.router
+      .route('/:id')
+      /**
+       * update single user
+       */
+      .put(verifyToken, UserController.update)
+      /**
+       * remove single user
+       */
+      .delete(verifyToken, UserController.remove)
   }
 
   /**

@@ -47,7 +47,6 @@ class UserController {
     try {
       const phone = req.params.phone
       const userRepository = getRepository(User)
-      console.log(phone)
       const user = await userRepository.find({ where: { phone } })
 
       if (!user) {
@@ -56,7 +55,7 @@ class UserController {
           .send({ success: false, message: 'Օգտատերը չի գտնվել' })
       }
 
-      const token = jwt.sign(phone, env.jwtSecret);
+      const token = jwt.sign(phone, env.jwtSecret)
 
       return res.send({ success: true, data: user, accessToken: token })
     } catch (err) {
@@ -66,15 +65,27 @@ class UserController {
 
   async create(req: Request, res: Response) {
     try {
-      const UserRepository = getRepository(User)
+      const userRepository = getRepository(User)
+
+      const existUser = await userRepository.findOne({
+        where: { phone: req.body.phone },
+      })
+
+      if (existUser) {
+        return res
+          .status(400)
+          .send({ success: false, message: 'Օգտատերը արդեն գոյություն ունի' })
+      }
 
       const user: User = Object.assign(new User(), {
         ...req.body,
       })
 
-      user.status = UserStatus.USER
+      if (!req.body.status) {
+        user.status = UserStatus.USER
+      }
 
-      const savedUser = await UserRepository.save(user)
+      const savedUser = await userRepository.save(user)
 
       return res.send({
         success: true,
@@ -89,13 +100,13 @@ class UserController {
   async update(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id)
-      const UserRepository = getRepository(User)
+      const userRepository = getRepository(User)
 
-      const user = await UserRepository.findOneOrFail({
+      const user = await userRepository.findOneOrFail({
         where: { id },
       })
 
-      const savedUser = await UserRepository.save({
+      const savedUser = await userRepository.save({
         ...user,
         ...req.body,
       })
@@ -113,9 +124,9 @@ class UserController {
   async remove(req: Request, res: Response) {
     try {
       const id = parseInt(req.params.id)
-      const UserRepository = getRepository(User)
+      const userRepository = getRepository(User)
 
-      const UserToRemove = await UserRepository.findOneOrFail({
+      const UserToRemove = await userRepository.findOneOrFail({
         where: { id },
       })
 
@@ -125,7 +136,7 @@ class UserController {
           .send({ success: false, message: 'Օգտատերը չի գտնվել' })
       }
 
-      await UserRepository.remove(UserToRemove)
+      await userRepository.remove(UserToRemove)
 
       return res.send({ success: true, message: 'Օգտատերը հեռացված է' })
     } catch (err) {
