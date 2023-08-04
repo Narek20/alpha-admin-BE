@@ -309,7 +309,7 @@ class OrderController {
 
   async update(req: Request, res: Response) {
     try {
-      let { createdAt, deliveryDate, status } = req.body
+      let { status } = req.body
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
       const driverRepository = getRepository(Driver)
@@ -333,8 +333,12 @@ class OrderController {
         ...order,
         ...req.body,
         status,
-        createdAt: new Date(req.body.createdAt) || order.createdAt,
-        deliveryDate: new Date(req.body.deliveryDate) || order.deliveryDate,
+        createdAt: req.body.createdAt
+          ? new Date(req.body.createdAt)
+          : order.createdAt,
+        deliveryDate: req.body.createdAt
+          ? new Date(req.body.deliveryDate)
+          : order.deliveryDate,
         orderProducts: order.orderProducts,
       })
 
