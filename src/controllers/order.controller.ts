@@ -246,12 +246,6 @@ class OrderController {
           return res.status(400).send({ message: 'Առաքիչը բացակայում է' })
         }
 
-        if (orderDriver.status === DriverStatus.DELIVERY) {
-          return res.status(400).send({ message: 'Առաքիչը Զբաղված է' })
-        }
-
-        orderDriver.status = DriverStatus.DELIVERY
-
         await driverRepository.save(orderDriver)
       }
 
@@ -324,7 +318,6 @@ class OrderController {
           },
         })
         order.driver = null
-        driver.status = DriverStatus.FREE
 
         await driverRepository.save(driver)
       }

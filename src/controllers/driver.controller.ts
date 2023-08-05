@@ -33,8 +33,6 @@ class DriverController {
         ...req.body,
       })
 
-      driver.status = DriverStatus.FREE
-
       const savedDriver = await driverRepository.save(driver)
 
       return res.send({
