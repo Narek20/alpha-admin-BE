@@ -344,6 +344,17 @@ class OrderController {
         orderProducts: order.orderProducts,
       })
 
+      const options: DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      }
+
+      savedOrder.deliveryDate = savedOrder.deliveryDate.toLocaleString(
+        'en-GB',
+        options,
+      )
+
       const orderProducts: OrderProduct[] = []
 
       await Promise.all(
