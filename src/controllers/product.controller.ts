@@ -1,3 +1,4 @@
+import { Category } from './../entities/category.entity'
 import { Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
 import { Brackets, Like, getRepository } from 'typeorm'
@@ -8,7 +9,6 @@ import {
   uploadImage,
 } from '../services/firbase.service'
 import { getOrderSearch, getProductQueries } from '../utils/getFilterQueries'
-import { Category } from '../entities/category.entity'
 import { Order } from '../entities/orders.entity'
 
 class ProductController {
@@ -213,14 +213,31 @@ class ProductController {
     try {
       const { id } = req.params
       const productRepository = getRepository(Product)
+      const categoryRepository = getRepository(Category)
       const product: Product = await productRepository.findOneOrFail({
         where: { id: +id },
+        relations: ['category'],
+      })
+
+      const selectedCategory = await categoryRepository.findOne({
+        where: { title: req.body.category },
       })
 
       let sizes = product.sizes
+      let additionalInfo = product.additionalInfo
+
       if (req.body.sizes) {
         sizes = JSON.parse(req.body.sizes)
       }
+
+      if (req.body.additionalInfo) {
+        additionalInfo = JSON.parse(req.body.additionalInfo)
+      }
+
+      additionalInfo = additionalInfo.filter(
+        ({ title }) =>
+          selectedCategory.fields.find((field) => field.title === title),
+      )
 
       const imageBuffers: ArrayBuffer[] = []
 
@@ -235,7 +252,9 @@ class ProductController {
       const savedProduct = await productRepository.save({
         ...product,
         ...req.body,
+        category: selectedCategory,
         sizes,
+        additionalInfo,
       })
 
       return res.send({

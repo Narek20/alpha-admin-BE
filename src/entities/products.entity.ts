@@ -29,9 +29,6 @@ class AdditionalInfo {
   title: string
 
   @Column()
-  key: string
-
-  @Column()
   value: string
 }
 
