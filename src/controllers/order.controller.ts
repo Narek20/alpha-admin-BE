@@ -360,9 +360,16 @@ class OrderController {
               data.id = orderProduct.id
             }
 
-            const { id } = await orderProductRepository.save(data)
+            await orderProductRepository.save(data)
+
+            if (!data.id) {
+              data.id = (
+                await orderProductRepository.findOne({ where: data })
+              ).id
+            }
+
             const savedOrderProduct = {
-              id,
+              id: data.id,
               ...orderProduct,
             }
 
