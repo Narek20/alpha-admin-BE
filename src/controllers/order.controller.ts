@@ -157,6 +157,7 @@ class OrderController {
         .select([
           'order',
           'product',
+          'orderProduct.id',
           'orderProduct.quantity',
           'orderProduct.size',
           'category',
@@ -178,6 +179,7 @@ class OrderController {
         )
 
         orderProducts.push({
+          id: order.orderProducts[i].id,
           quantity: order.orderProducts[i].quantity,
           size: order.orderProducts[i].size,
           product: { ...order.orderProducts[i].product, images: productImages },
@@ -307,6 +309,7 @@ class OrderController {
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
       const driverRepository = getRepository(Driver)
+      const orderProductRepository = getRepository(OrderProduct)
       const order = await orderRepository.findOneOrFail({
         where: { id },
       })
@@ -322,6 +325,9 @@ class OrderController {
         await driverRepository.save(driver)
       }
 
+      const [day, month, year] = req.body.deliveryDate.split('/')
+      const newDeliveryDate = `${month}/${day}/${year}`
+
       const savedOrder = await orderRepository.save({
         ...order,
         ...req.body,
@@ -330,14 +336,43 @@ class OrderController {
           ? new Date(req.body.createdAt)
           : order.createdAt,
         deliveryDate: req.body.createdAt
-          ? new Date(req.body.deliveryDate)
+          ? new Date(newDeliveryDate)
           : order.deliveryDate,
         orderProducts: order.orderProducts,
       })
 
+      const orderProducts = []
+
+      await Promise.all(
+        req.body.orderProducts?.map(async (orderProduct: OrderProduct) => {
+          try {
+            const data: Partial<OrderProduct> = {
+              orderId: order.id,
+              productId: orderProduct.product.id,
+              quantity: orderProduct.quantity,
+              size: orderProduct.size,
+            }
+
+            if (orderProduct.id) {
+              data.id = orderProduct.id
+            }
+
+            const { id } = await orderProductRepository.save(data)
+            const savedOrderProduct = {
+              id,
+              ...orderProduct,
+            }
+
+            orderProducts.unshift(savedOrderProduct)
+          } catch (error) {
+            throw error
+          }
+        }),
+      )
+
       return res.send({
         success: true,
-        data: savedOrder,
+        data: { ...savedOrder, orderProducts },
         message: 'Պատվերը հաջողությամբ թարմացված է',
       })
     } catch (err) {

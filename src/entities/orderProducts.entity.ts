@@ -7,9 +7,14 @@ export class OrderProduct {
   @PrimaryColumn({
     type: 'int',
   })
+  id: number
+
+  @Column({
+    type: 'int',
+  })
   orderId: number
 
-  @PrimaryColumn({
+  @Column({
     type: 'int',
   })
   productId: number
