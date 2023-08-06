@@ -325,8 +325,13 @@ class OrderController {
         await driverRepository.save(driver)
       }
 
-      const [day, month, year] = req.body.deliveryDate.split('/')
-      const newDeliveryDate = `${month}/${day}/${year}`
+      let deliveryDate: Date
+      if (req.body.deliveryDate.includes('/')) {
+        const [day, month, year] = req.body.deliveryDate.split('/')
+        deliveryDate = new Date(`${month}/${day}/${year}`)
+      } else {
+        deliveryDate = new Date(req.body.deliveryDate)
+      }
 
       const savedOrder = await orderRepository.save({
         ...order,
@@ -335,9 +340,7 @@ class OrderController {
         createdAt: req.body.createdAt
           ? new Date(req.body.createdAt)
           : order.createdAt,
-        deliveryDate: req.body.createdAt
-          ? new Date(newDeliveryDate)
-          : order.deliveryDate,
+        deliveryDate: req.body.deliveryDate ? deliveryDate : order.deliveryDate,
         orderProducts: order.orderProducts,
       })
 
