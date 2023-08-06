@@ -344,7 +344,7 @@ class OrderController {
         orderProducts: order.orderProducts,
       })
 
-      const orderProducts = []
+      const orderProducts: OrderProduct[] = []
 
       await Promise.all(
         req.body.orderProducts?.map(async (orderProduct: OrderProduct) => {
@@ -371,6 +371,18 @@ class OrderController {
             throw error
           }
         }),
+      )
+
+      const orderProductList = await orderProductRepository.find({
+        where: { orderId: order.id },
+      })
+
+      await Promise.all(
+        orderProductList.map(
+          async (el) =>
+            !orderProducts.some((oP) => oP.id === el.id) &&
+            (await orderProductRepository.delete({ id: el.id })),
+        ),
       )
 
       return res.send({
