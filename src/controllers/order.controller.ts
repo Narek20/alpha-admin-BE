@@ -326,7 +326,7 @@ class OrderController {
       }
 
       let deliveryDate: Date
-      if (req.body.deliveryDate.includes('/')) {
+      if (req.body.deliveryDate?.includes('/')) {
         const [day, month, year] = req.body.deliveryDate.split('/')
         deliveryDate = new Date(`${month}/${day}/${year}`)
       } else {
@@ -344,68 +344,67 @@ class OrderController {
         orderProducts: order.orderProducts,
       })
 
-      const options: DateTimeFormatOptions = {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
+      
+
+      if (req.body.orderProducts) {
+        const orderProducts: OrderProduct[] = []
+
+        await Promise.all(
+          req.body.orderProducts?.map(async (orderProduct: OrderProduct) => {
+            try {
+              const data: Partial<OrderProduct> = {
+                orderId: order.id,
+                productId: orderProduct.product.id,
+                quantity: orderProduct.quantity,
+                size: orderProduct.size,
+              }
+
+              if (orderProduct.id) {
+                data.id = orderProduct.id
+              }
+
+              await orderProductRepository.save(data)
+
+              if (!data.id) {
+                data.id = (
+                  await orderProductRepository.findOne({ where: data })
+                ).id
+              }
+
+              const savedOrderProduct = {
+                id: data.id,
+                ...orderProduct,
+              }
+
+              orderProducts.unshift(savedOrderProduct)
+            } catch (error) {
+              throw error
+            }
+          }),
+        )
+
+        const orderProductList = await orderProductRepository.find({
+          where: { orderId: order.id },
+        })
+
+        await Promise.all(
+          orderProductList.map(
+            async (el) =>
+              !orderProducts.some((oP) => oP.id === el.id) &&
+              (await orderProductRepository.delete({ id: el.id })),
+          ),
+        )
+
+        return res.send({
+          success: true,
+          data: { ...savedOrder, orderProducts },
+          message: 'Պատվերը հաջողությամբ թարմացված է',
+        })
       }
-
-      savedOrder.deliveryDate = savedOrder.deliveryDate.toLocaleString(
-        'en-GB',
-        options,
-      )
-
-      const orderProducts: OrderProduct[] = []
-
-      await Promise.all(
-        req.body.orderProducts?.map(async (orderProduct: OrderProduct) => {
-          try {
-            const data: Partial<OrderProduct> = {
-              orderId: order.id,
-              productId: orderProduct.product.id,
-              quantity: orderProduct.quantity,
-              size: orderProduct.size,
-            }
-
-            if (orderProduct.id) {
-              data.id = orderProduct.id
-            }
-
-            await orderProductRepository.save(data)
-
-            if (!data.id) {
-              data.id = (
-                await orderProductRepository.findOne({ where: data })
-              ).id
-            }
-
-            const savedOrderProduct = {
-              id: data.id,
-              ...orderProduct,
-            }
-
-            orderProducts.unshift(savedOrderProduct)
-          } catch (error) {
-            throw error
-          }
-        }),
-      )
-
-      const orderProductList = await orderProductRepository.find({
-        where: { orderId: order.id },
-      })
-
-      await Promise.all(
-        orderProductList.map(
-          async (el) =>
-            !orderProducts.some((oP) => oP.id === el.id) &&
-            (await orderProductRepository.delete({ id: el.id })),
-        ),
-      )
 
       return res.send({
         success: true,
-        data: { ...savedOrder, orderProducts },
+        data: savedOrder,
         message: 'Պատվերը հաջողությամբ թարմացված է',
       })
     } catch (err) {
