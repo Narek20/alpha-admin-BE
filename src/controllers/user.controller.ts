@@ -5,6 +5,7 @@ import { User } from '../entities/users.entity'
 import { UserStatus } from '../types/types/user.types'
 import { IExtendedRequest } from '../types/interfaces/extendedRequest.interface'
 import env from '../env/env.variables'
+import { decrypt, encrypt } from '../utils/passworod'
 
 class UserController {
   private static instance: UserController
@@ -22,7 +23,12 @@ class UserController {
       const userRepository = getRepository(User)
       const users = await userRepository.find()
 
-      return res.send({ success: true, data: users })
+      const formattedUsers = users.map((user) => ({
+        ...user,
+        password: decrypt(user.password, env.encryptionCode),
+      }))
+
+      return res.send({ success: true, data: formattedUsers })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
@@ -30,8 +36,9 @@ class UserController {
 
   async getOne(req: IExtendedRequest, res: Response) {
     const userRepository = getRepository(User)
+
     const user = await userRepository.findOne({
-      where: { phone: req.decodedToken },
+      where: { password: encrypt(req.decodedToken, env.encryptionCode) },
     })
 
     if (!user) {
@@ -43,11 +50,13 @@ class UserController {
     return res.send({ success: true, data: user })
   }
 
-  async getUserByPhoneNumber(req: Request, res: Response) {
+  async login(req: Request, res: Response) {
     try {
-      const phone = req.params.phone
+      const { login, password } = req.body
       const userRepository = getRepository(User)
-      const user = await userRepository.find({ where: { phone } })
+      const user = await userRepository.findOne({
+        where: { login, password: encrypt(password, env.encryptionCode) },
+      })
 
       if (!user) {
         return res
@@ -55,7 +64,7 @@ class UserController {
           .send({ success: false, message: 'Օգտատերը չի գտնվել' })
       }
 
-      const token = jwt.sign(phone, env.jwtSecret)
+      const token = jwt.sign(password, env.jwtSecret)
 
       return res.send({ success: true, data: user, accessToken: token })
     } catch (err) {
@@ -68,7 +77,7 @@ class UserController {
       const userRepository = getRepository(User)
 
       const existUser = await userRepository.findOne({
-        where: { phone: req.body.phone },
+        where: { login: req.body.login },
       })
 
       if (existUser) {
@@ -79,6 +88,7 @@ class UserController {
 
       const user: User = Object.assign(new User(), {
         ...req.body,
+        password: encrypt(req.body.password, env.encryptionCode),
       })
 
       if (!req.body.status) {
@@ -86,6 +96,8 @@ class UserController {
       }
 
       const savedUser = await userRepository.save(user)
+      
+      savedUser.password = req.body.password
 
       return res.send({
         success: true,
@@ -109,7 +121,10 @@ class UserController {
       const savedUser = await userRepository.save({
         ...user,
         ...req.body,
+        password: encrypt(req.body.password, env.encryptionCode),
       })
+
+      savedUser.password = req.body.password
 
       return res.send({
         success: true,

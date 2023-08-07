@@ -28,11 +28,11 @@ class UserRoutes {
       .get(verifyToken, UserController.getOne)
 
     this.router
-      .route('/:phone')
+      .route('/login')
       /**
        * get single user
        */
-      .get(UserController.getUserByPhoneNumber)
+      .post(UserController.login)
 
     this.router
       .route('/create')

@@ -4,6 +4,7 @@ dotenv.config({})
 
 export interface EnvVariables {
   port?: string
+  encryptionCode?: string
   jwtSecret?: string
   databaseType?: string
   databaseHost?: string
@@ -21,6 +22,7 @@ export interface EnvVariables {
 const env: EnvVariables = {
   port: process.env.PORT,
   jwtSecret: process.env.JWT_SECRET,
+  encryptionCode: process.env.ENCRYPTION_CODE,
   databaseType: process.env.DATABASE_TYPE,
   databaseHost: process.env.DATABASE_HOST,
   databasePort: process.env.DATABASE_PORT,

@@ -3,7 +3,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
 } from 'typeorm'
 import { UserStatus } from '../types/types/user.types'
 
@@ -15,16 +14,20 @@ export class User {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: false,
   })
   fullName: string
 
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: false,
   })
-  phone: string
+  login: string
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+  })
+  password: string
 
   @Column({
     type: 'varchar',
