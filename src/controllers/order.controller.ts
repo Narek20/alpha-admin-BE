@@ -125,14 +125,14 @@ class OrderController {
         let deliveryDate: string | Date = order.deliveryDate
         if (deliveryDate) {
           const deliveryNewDate = new Date(
-            order.deliveryDate.getTime() + 24 * 1000 * 60 * 60,
+            order.deliveryDate.getTime()
           )
 
           deliveryDate = deliveryNewDate.toISOString().split('T')[0]
         }
 
         const createdAtDate = new Date(
-          order.createdAt.getTime() + 24 * 1000 * 60 * 60,
+          order.createdAt.getTime()
         )
 
         const createdAt = createdAtDate.toISOString().split('T')[0]
@@ -186,24 +186,24 @@ class OrderController {
         })
       }
 
-      const options: DateTimeFormatOptions = {
-        year: 'numeric',
-        month: 'numeric',
-        day: 'numeric',
-      }
-
-      let deliveryDate: Date | string = order.deliveryDate
-
+      let deliveryDate: string | Date = order.deliveryDate
       if (deliveryDate) {
-        const date = new Date(deliveryDate)
-        deliveryDate = date.toLocaleString('en-GB', options)
+        const deliveryNewDate = new Date(
+          order.deliveryDate.getTime()
+        )
+
+        deliveryDate = deliveryNewDate.toISOString().split('T')[0]
       }
-      const createdNewDate = new Date(order.createdAt)
-      const formattedDate = createdNewDate.toLocaleString('en-GB', options)
+
+      const createdAtDate = new Date(
+        order.createdAt.getTime()
+      )
+
+      const createdAt = createdAtDate.toISOString().split('T')[0]
 
       return res.send({
         success: true,
-        data: { ...order, formattedDate, deliveryDate, orderProducts },
+        data: { ...order, createdAt, deliveryDate, orderProducts },
       })
     } catch (err) {
       return res.status(500).send({ success: false, message: err.message })
@@ -292,11 +292,11 @@ class OrderController {
       }
 
       const date = new Date(createdOrder.createdAt)
-      const formattedDate = date.toLocaleString('en-GB', options)
+      const createdAt = date.toLocaleString('en-GB', options)
 
       return res.send({
         success: true,
-        data: { ...createdOrder, formattedDate },
+        data: { ...createdOrder, createdAt },
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })
@@ -325,7 +325,7 @@ class OrderController {
         await driverRepository.save(driver)
       }
 
-      let deliveryDate: Date
+      let deliveryDate: Date | string
       if (req.body.deliveryDate?.includes('/')) {
         const [day, month, year] = req.body.deliveryDate.split('/')
         deliveryDate = new Date(`${month}/${day}/${year}`)
@@ -344,7 +344,19 @@ class OrderController {
         orderProducts: order.orderProducts,
       })
 
-      
+      if (deliveryDate) {
+        const deliveryNewDate = new Date(
+          savedOrder.deliveryDate.getTime()
+        )
+
+        deliveryDate = deliveryNewDate.toISOString().split('T')[0]
+      }
+
+      const createdAtDate = new Date(
+        savedOrder.createdAt.getTime()
+      )
+
+      const createdAt = createdAtDate.toISOString().split('T')[0]
 
       if (req.body.orderProducts) {
         const orderProducts: OrderProduct[] = []
@@ -372,8 +384,8 @@ class OrderController {
               }
 
               const savedOrderProduct = {
-                id: data.id,
                 ...orderProduct,
+                id: data.id,
               }
 
               orderProducts.unshift(savedOrderProduct)
@@ -397,7 +409,7 @@ class OrderController {
 
         return res.send({
           success: true,
-          data: { ...savedOrder, orderProducts },
+          data: { ...savedOrder, orderProducts, createdAt, deliveryDate },
           message: 'Պատվերը հաջողությամբ թարմացված է',
         })
       }
