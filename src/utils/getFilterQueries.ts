@@ -58,7 +58,7 @@ export const getOrderQueries = (
   return filter
 }
 
-export const getOrderSearch = (req: Request): string[] => {
+export const getSearches = (req: Request): string[] => {
   const queries = req.query
 
   if (queries.search && typeof queries.search === 'string') {

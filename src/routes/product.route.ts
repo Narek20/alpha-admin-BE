@@ -32,7 +32,7 @@ class ProductRoutes {
       .post(upload.array('images'), ProductController.create)
 
     this.router
-      .route('/:id')
+      .route('/one/:id')
       /**
        * Get single product
        */
@@ -51,7 +51,7 @@ class ProductRoutes {
       /**
        * search items
        */
-      .get(ProductController.search)
+      .get(ProductController.searchProducts)
   }
 
   /**

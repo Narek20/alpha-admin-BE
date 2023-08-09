@@ -5,7 +5,7 @@ import { Driver } from '../entities/driver.entity'
 import { Product } from '../entities/products.entity'
 import { OrderProduct } from '../entities/orderProducts.entity'
 import { getImageUrls } from '../services/firbase.service'
-import { getOrderQueries, getOrderSearch } from '../utils/getFilterQueries'
+import { getOrderQueries, getSearches } from '../utils/getFilterQueries'
 import { DriverStatus } from '../types/types/driver.types'
 import { OrderStatuses } from '../types/types/order.types'
 import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
@@ -63,7 +63,7 @@ class OrderController {
 
   async searchOrders(req: Request, res: Response) {
     try {
-      const searchTerms = getOrderSearch(req)
+      const searchTerms = getSearches(req)
       const orderRepository = getRepository(Order)
       const queryBuilder = orderRepository.createQueryBuilder('order')
       const order = await orderRepository.find()
@@ -188,16 +188,12 @@ class OrderController {
 
       let deliveryDate: string | Date = order.deliveryDate
       if (deliveryDate) {
-        const deliveryNewDate = new Date(
-          order.deliveryDate.getTime()
-        )
+        const deliveryNewDate = new Date(order.deliveryDate.getTime())
 
         deliveryDate = deliveryNewDate.toISOString().split('T')[0]
       }
 
-      const createdAtDate = new Date(
-        order.createdAt.getTime()
-      )
+      const createdAtDate = new Date(order.createdAt.getTime())
 
       const createdAt = createdAtDate.toISOString().split('T')[0]
 
@@ -345,16 +341,12 @@ class OrderController {
       })
 
       if (deliveryDate) {
-        const deliveryNewDate = new Date(
-          savedOrder.deliveryDate.getTime()
-        )
+        const deliveryNewDate = new Date(savedOrder.deliveryDate.getTime())
 
         deliveryDate = deliveryNewDate.toISOString().split('T')[0]
       }
 
-      const createdAtDate = new Date(
-        savedOrder.createdAt.getTime()
-      )
+      const createdAtDate = new Date(savedOrder.createdAt.getTime())
 
       const createdAt = createdAtDate.toISOString().split('T')[0]
 

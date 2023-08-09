@@ -1,15 +1,14 @@
 import { Category } from './../entities/category.entity'
 import { Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
-import { Brackets, Like, getRepository } from 'typeorm'
+import { Brackets, ILike, getRepository } from 'typeorm'
 import {
   getImageUrls,
   removeReference,
   updateImages,
   uploadImage,
 } from '../services/firbase.service'
-import { getOrderSearch, getProductQueries } from '../utils/getFilterQueries'
-import { Order } from '../entities/orders.entity'
+import { getSearches, getProductQueries } from '../utils/getFilterQueries'
 
 class ProductController {
   private static instance: ProductController
@@ -80,15 +79,15 @@ class ProductController {
     }
   }
 
-  async search(req: Request, res: Response) {
+  async searchProducts(req: Request, res: Response) {
     try {
-      const searchTerms = getOrderSearch(req)
-      const orderRepository = getRepository(Order)
-      const queryBuilder = orderRepository.createQueryBuilder('order')
-      const order = await orderRepository.find()
-      const columns = Object.keys(order[0]).slice(1)
+      const searchTerms = getSearches(req)
+      const productRepository = getRepository(Product)
+      const queryBuilder = productRepository.createQueryBuilder('product')
+      console.log(searchTerms)
+      const columns = ['title', 'brand']
 
-      const orders = await queryBuilder
+      const products = await queryBuilder
         .where(
           new Brackets((outerQb) => {
             searchTerms.forEach((searchTerm, index) => {
@@ -96,19 +95,10 @@ class ProductController {
                 outerQb.where(
                   new Brackets((innerQb) => {
                     columns.forEach((column, columnIndex) => {
-                      if (
-                        column === 'isSpecial' ||
-                        column === 'createdAt' ||
-                        column === 'updatedAt' ||
-                        column === 'deliveryDate'
-                      ) {
-                        return
-                      }
-
                       if (columnIndex === 0) {
-                        innerQb.where({ [column]: Like(`%${searchTerm}%`) })
+                        innerQb.where({ [column]: ILike(`%${searchTerm}%`) })
                       } else {
-                        innerQb.orWhere({ [column]: Like(`%${searchTerm}%`) })
+                        innerQb.orWhere({ [column]: ILike(`%${searchTerm}%`) })
                       }
                     })
                   }),
@@ -117,19 +107,10 @@ class ProductController {
                 outerQb.andWhere(
                   new Brackets((innerQb) => {
                     columns.forEach((column, columnIndex) => {
-                      if (
-                        column === 'isSpecial' ||
-                        column === 'createdAt' ||
-                        column === 'updatedAt' ||
-                        column === 'deliveryDate'
-                      ) {
-                        return
-                      }
-
                       if (columnIndex === 0) {
-                        innerQb.where({ [column]: Like(`%${searchTerm}%`) })
+                        innerQb.where({ [column]: ILike(`%${searchTerm}%`) })
                       } else {
-                        innerQb.orWhere({ [column]: Like(`%${searchTerm}%`) })
+                        innerQb.orWhere({ [column]: ILike(`%${searchTerm}%`) })
                       }
                     })
                   }),
@@ -140,12 +121,17 @@ class ProductController {
         )
         .getMany()
 
+      const productsWithImages = products.map(async (product) => ({
+        ...product,
+        images: await getImageUrls(`products/${product.id}`),
+      }))
+
       return res.send({
         success: true,
-        data: orders,
+        data: await Promise.all(productsWithImages),
       })
-    } catch (err: any) {
-      return res.status(500).send({ success: false, message: err.message })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
     }
   }
 
@@ -234,9 +220,8 @@ class ProductController {
         additionalInfo = JSON.parse(req.body.additionalInfo)
       }
 
-      additionalInfo = additionalInfo.filter(
-        ({ title }) =>
-          selectedCategory.fields.find((field) => field.title === title),
+      additionalInfo = additionalInfo.filter(({ title }) =>
+        selectedCategory.fields.find((field) => field.title === title),
       )
 
       const imageBuffers: ArrayBuffer[] = []
