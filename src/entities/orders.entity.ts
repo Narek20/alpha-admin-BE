@@ -39,6 +39,13 @@ export class Order {
   @Column({
     type: 'varchar',
     length: 255,
+    nullable: true
+  })
+  address2: string
+
+  @Column({
+    type: 'varchar',
+    length: 255,
     nullable: true,
   })
   notes: string
