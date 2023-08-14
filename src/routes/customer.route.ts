@@ -13,7 +13,14 @@ class CustomerRoutes {
     this.router = Router()
 
     this.router
-      .route('/:fullName')
+      .route('/')
+      /**
+       * Get customers
+       */
+      .get(CustomerController.getAll)
+
+    this.router
+      .route('/:phone')
       /**
        * Get single customer
        */

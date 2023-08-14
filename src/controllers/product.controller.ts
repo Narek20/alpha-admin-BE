@@ -84,7 +84,6 @@ class ProductController {
       const searchTerms = getSearches(req)
       const productRepository = getRepository(Product)
       const queryBuilder = productRepository.createQueryBuilder('product')
-      console.log(searchTerms)
       const columns = ['title', 'brand']
 
       const products = await queryBuilder

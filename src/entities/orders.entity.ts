@@ -8,8 +8,10 @@ import {
   UpdateDateColumn,
   JoinColumn,
   OneToMany,
+  ManyToOne,
 } from 'typeorm'
 import { Product } from './products.entity'
+import { Customer } from './customer.entity'
 import { OrderProduct } from './orderProducts.entity'
 import { OrderStatuses } from '../types/types/order.types'
 
@@ -39,7 +41,7 @@ export class Order {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: true
+    nullable: true,
   })
   address2: string
 
@@ -106,6 +108,11 @@ export class Order {
       referencedColumnName: 'id',
     },
   })
+
+  @ManyToOne(() => Customer)
+  @JoinTable({ name: 'customer' })
+  customer: Customer
+
   @JoinColumn({
     name: 'order_product',
     referencedColumnName: 'quantity',
