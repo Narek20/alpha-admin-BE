@@ -84,10 +84,10 @@ class ProductController {
       const searchTerms = getSearches(req)
       const productRepository = getRepository(Product)
       const queryBuilder = productRepository.createQueryBuilder('product')
-      console.log(searchTerms)
-      const columns = ['title', 'brand']
+      const columns = ['title', 'brand', 'country', 'color']
 
       const products = await queryBuilder
+        .leftJoinAndSelect('product.category', 'category')
         .where(
           new Brackets((outerQb) => {
             searchTerms.forEach((searchTerm, index) => {
@@ -121,14 +121,18 @@ class ProductController {
         )
         .getMany()
 
-      const productsWithImages = products.map(async (product) => ({
-        ...product,
-        images: await getImageUrls(`products/${product.id}`),
-      }))
+      const productsWithImages = await Promise.all(
+        products.map(async (product) => ({
+          ...product,
+          images: await getImageUrls(`products/${product.id}`),
+        })),
+      )
+
+      console.log(productsWithImages)
 
       return res.send({
         success: true,
-        data: await Promise.all(productsWithImages),
+        data: productsWithImages,
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })
