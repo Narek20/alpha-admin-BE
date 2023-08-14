@@ -124,16 +124,12 @@ class OrderController {
       const formattedOrders = orders.map((order) => {
         let deliveryDate: string | Date = order.deliveryDate
         if (deliveryDate) {
-          const deliveryNewDate = new Date(
-            order.deliveryDate.getTime()
-          )
+          const deliveryNewDate = new Date(order.deliveryDate.getTime())
 
           deliveryDate = deliveryNewDate.toISOString().split('T')[0]
         }
 
-        const createdAtDate = new Date(
-          order.createdAt.getTime()
-        )
+        const createdAtDate = new Date(order.createdAt.getTime())
 
         const createdAt = createdAtDate.toISOString().split('T')[0]
         return { ...order, createdAt, deliveryDate }
@@ -231,7 +227,11 @@ class OrderController {
             phone,
           })
 
-          await customerRepository.save(customer)
+          const savedCustomer = await customerRepository.save(customer)
+
+          order.customer = savedCustomer
+        } else {
+          order.customer = customer
         }
       }
 
@@ -301,14 +301,26 @@ class OrderController {
 
   async update(req: Request, res: Response) {
     try {
-      let { status } = req.body
+      let { status, fullName, phone } = req.body
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
       const driverRepository = getRepository(Driver)
       const orderProductRepository = getRepository(OrderProduct)
+      const customerRepository = getRepository(Customer)
       const order = await orderRepository.findOneOrFail({
         where: { id },
       })
+
+      if (fullName && phone) {
+        const customer = await customerRepository.findOne({
+          where: { fullName: order.fullName, phone: order.phone },
+        })
+
+        customer.phone = phone
+        customer.fullName = fullName
+
+        await customerRepository.save(customer)
+      }
 
       if (status && order.driver && status === OrderStatuses.COMPLETED) {
         const driver = await driverRepository.findOne({

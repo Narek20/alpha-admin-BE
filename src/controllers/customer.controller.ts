@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import { getRepository } from 'typeorm'
-import { Order } from '../entities/orders.entity'
 import { Customer } from '../entities/customer.entity'
 
 class CustomerController {
@@ -14,18 +13,56 @@ class CustomerController {
     return CustomerController.instance
   }
 
-  async getOne(req: Request, res: Response) {
+  async getAll(req: Request, res: Response) {
     try {
-      const fullName = req.params.fullName
       const customerRepository = getRepository(Customer)
-      const orderRepository = getRepository(Order)
+      const customers = await customerRepository
+        .createQueryBuilder('customer')
+        .leftJoinAndSelect('customer.orders', 'order')
+        .leftJoinAndSelect('order.orderProducts', 'order_product')
+        .leftJoinAndSelect('order_product.product', 'product')
+        .getMany()
 
-      const customer = await customerRepository.findOne({ where: { fullName } })
-      const orders = await orderRepository.find({
-        where: { fullName },
+      const formattedCustomers = customers.map((customer) => {
+        let totalPrice = 0
+        let totalQty = 0
+
+        customer.orders.forEach((order) => {
+          order.orderProducts.forEach((orderProduct) => {
+            totalPrice += orderProduct.product.price * orderProduct.quantity
+            totalQty += orderProduct.quantity
+          })
+        })
+
+        return {
+          id: customer.id,
+          fullName: customer.fullName,
+          phone: customer.phone,
+          totalPrice,
+          totalQty,
+        }
       })
 
-      const formattedOrders = orders.map((order) => {
+      return res.send({
+        success: true,
+        data: formattedCustomers,
+      })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
+
+  async getOne(req: Request, res: Response) {
+    try {
+      const phone = req.params.phone
+      const customerRepository = getRepository(Customer)
+
+      const customer = await customerRepository.findOne({
+        where: { phone },
+        relations: ['orders'],
+      })
+
+      const formattedOrders = customer.orders.map((order) => {
         let deliveryDate: string | Date = order.deliveryDate
         if (deliveryDate) {
           const deliveryNewDate = new Date(

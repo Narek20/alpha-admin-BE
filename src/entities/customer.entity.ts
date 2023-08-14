@@ -3,7 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm'
+import { Order } from './orders.entity'
 
 @Entity()
 export class Customer {
@@ -24,4 +26,7 @@ export class Customer {
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
+
+  @OneToMany(() => Order, order => order.customer)
+  orders: Order[];
 }
