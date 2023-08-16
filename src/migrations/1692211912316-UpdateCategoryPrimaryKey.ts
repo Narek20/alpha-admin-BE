@@ -9,7 +9,10 @@ export class UpdateCategoryPrimaryKey1692211912316
   implements MigrationInterface
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropForeignKey('product', 'categoryId')
+    await queryRunner.dropForeignKey(
+      'product',
+      'FK_ff0c0301a95e517153df97f6812',
+    )
 
     await queryRunner.dropPrimaryKey('category')
 
@@ -17,11 +20,22 @@ export class UpdateCategoryPrimaryKey1692211912316
 
     await queryRunner.dropColumn('category', 'id')
 
+    await queryRunner.addColumn(
+      'product',
+      new TableColumn({
+        name: 'category',
+        type: 'varchar',
+        isNullable: false,
+      }),
+    )
+
+    await queryRunner.dropColumn('product', 'categoryId')
+
     await queryRunner.createForeignKey(
       'product',
       new TableForeignKey({
-        name: 'product',
-        columnNames: ['categoryId'],
+        name: 'FK_product_categoryTitle',
+        columnNames: ['category'],
         referencedTableName: 'category',
         referencedColumnNames: ['title'],
       }),
@@ -29,7 +43,7 @@ export class UpdateCategoryPrimaryKey1692211912316
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropForeignKey('product', 'categoryId')
+    await queryRunner.dropForeignKey('product', 'FK_product_categoryTitle')
 
     await queryRunner.dropPrimaryKey('category')
 
@@ -45,10 +59,20 @@ export class UpdateCategoryPrimaryKey1692211912316
 
     await queryRunner.createPrimaryKey('category', ['id'])
 
+    await queryRunner.addColumn(
+      'product',
+      new TableColumn({
+        name: 'categoryId',
+        type: 'int',
+      }),
+    )
+
+    await queryRunner.dropColumn('product', 'category')
+
     await queryRunner.createForeignKey(
       'product',
       new TableForeignKey({
-        name: 'product',
+        name: 'FK_ff0c0301a95e517153df97f6812',
         columnNames: ['categoryId'],
         referencedTableName: 'category',
         referencedColumnNames: ['id'],
