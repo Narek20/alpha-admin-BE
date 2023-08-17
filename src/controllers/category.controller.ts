@@ -26,18 +26,20 @@ class CategoryController {
 
   async create(req: Request, res: Response) {
     try {
+      const newCategories: Category[] = req.body
       const categoryRepository = getRepository(Category)
 
-      const category: Category = Object.assign(new Category(), {
-        ...req.body,
-      })
+      for (let i = 0; i < newCategories.length; i++) {
+        const category: Category = Object.assign(new Category(), {
+          ...newCategories[i],
+        })
 
-      const savedCategory = await categoryRepository.save(category)
+        await categoryRepository.save(category)
+      }
 
       return res.send({
         success: true,
-        data: savedCategory,
-        message: 'Կատեգորիան ստեղծված է',
+        message: 'Կատեգորիանները ստեղծված է',
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })
@@ -49,7 +51,7 @@ class CategoryController {
       const updatedCategories: Category[] = req.body
       const categoryRepository = getRepository(Category)
 
-      const categories = await categoryRepository.find({})
+      const categories = await categoryRepository.find()
 
       for (let i = 0; i < categories.length; i++) {
         const updatedCategory = updatedCategories.find(
@@ -64,7 +66,7 @@ class CategoryController {
       }
 
       for (let i = 0; i < updatedCategories.length; i++) {
-        if (!updatedCategories[i].id) {
+        if (!updatedCategories[i].title) {
           const category: Category = Object.assign(new Category(), {
             ...updatedCategories[i],
           })
@@ -84,11 +86,11 @@ class CategoryController {
 
   async remove(req: Request, res: Response) {
     try {
-      const id = parseInt(req.params.id)
+      const title = req.params.title
       const categoryRepository = getRepository(Category)
 
       const categoryToRemove = await categoryRepository.findOneOrFail({
-        where: { id },
+        where: { title },
       })
 
       if (!categoryToRemove) {

@@ -97,15 +97,15 @@ export class Product {
     nullable: true,
   })
   additionalInfo: AdditionalInfo[]
-  
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
-  
+
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date
 
   @ManyToOne(() => Category)
-  @JoinTable({ name: 'category' })
+  @JoinColumn({ name: 'category' }) 
   category: Category
 
   @ManyToMany(() => Order)

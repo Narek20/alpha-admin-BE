@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm'
-import { Product } from './products.entity'
+import { Entity, Column, PrimaryColumn } from 'typeorm'
 
 class Field {
   @Column()
@@ -11,10 +10,7 @@ class Field {
 
 @Entity()
 export class Category {
-  @PrimaryGeneratedColumn()
-  id: number
-
-  @Column({
+  @PrimaryColumn({
     type: 'varchar',
     length: 255,
   })

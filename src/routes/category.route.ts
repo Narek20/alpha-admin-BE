@@ -31,7 +31,7 @@ class CategoryRoutes {
       .post(CategoryController.create)
 
     this.router
-      .route('/:id')
+      .route('/:title')
       /**
        * Remove single category
        */
