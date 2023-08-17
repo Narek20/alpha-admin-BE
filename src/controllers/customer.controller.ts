@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
 import { getRepository } from 'typeorm'
 import { Customer } from '../entities/customer.entity'
+import { Order } from '../entities/orders.entity'
+import { getImageUrls } from '../services/firbase.service'
 
 class CustomerController {
   private static instance: CustomerController
@@ -57,10 +59,38 @@ class CustomerController {
       const phone = req.params.phone
       const customerRepository = getRepository(Customer)
 
-      const customer = await customerRepository.findOne({
-        where: { phone },
-        relations: ['orders'],
-      })
+      const customer = await customerRepository
+        .createQueryBuilder('customer')
+        .leftJoinAndSelect('customer.orders', 'order')
+        .leftJoinAndSelect('order.orderProducts', 'order_product')
+        .leftJoinAndSelect('order_product.product', 'product')
+        .leftJoinAndSelect('product.category', 'category')
+        .where({ phone: phone })
+        .getOne()
+
+      let totalPrice = 0
+      let totalQty = 0
+
+      const orders: Order[] = []
+
+      for (const order of customer.orders) {
+        const orderProducts = []
+        for (const orderProduct of order.orderProducts) {
+          totalPrice += orderProduct.product.price * orderProduct.quantity
+          totalQty += orderProduct.quantity
+
+          orderProducts.push({
+            ...orderProduct,
+            product: {
+              ...orderProduct.product,
+              images: await getImageUrls(`products/${orderProduct.product.id}`),
+            },
+          })
+        }
+        orders.push({ ...order, orderProducts })
+      }
+
+      customer.orders = orders
 
       const formattedOrders = customer.orders.map((order) => {
         let deliveryDate: string | Date = order.deliveryDate
@@ -82,7 +112,45 @@ class CustomerController {
 
       return res.send({
         success: true,
-        data: { ...customer, orders: formattedOrders },
+        data: { ...customer, orders: formattedOrders, totalPrice, totalQty },
+      })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id)
+      const { fullName, phone } = req.body
+
+      const driverRepository = getRepository(Customer)
+      const orderRepository = getRepository(Order)
+
+      const customer = await driverRepository.findOneOrFail({
+        where: { id },
+      })
+
+      const orders = await orderRepository.find({
+        where: { phone: customer.phone, fullName: customer.fullName },
+      })
+
+      for (const order of orders) {
+        order.fullName = fullName
+        order.phone = phone
+
+        await orderRepository.save(order)
+      }
+
+      const savedCustomer = await driverRepository.save({
+        ...customer,
+        ...req.body,
+      })
+
+      return res.send({
+        success: true,
+        data: savedCustomer,
+        message: 'Տվյալները պահպանված են',
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })

@@ -25,6 +25,13 @@ class CustomerRoutes {
        * Get single customer
        */
       .get(CustomerController.getOne)
+
+    this.router
+      .route('/:id')
+      /**
+       * Update customer
+       */
+      .put(CustomerController.update)
   }
 
   /**

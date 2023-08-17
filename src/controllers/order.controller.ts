@@ -216,6 +216,34 @@ class OrderController {
         ...req.body,
       })
 
+      let totalPrice = 0
+      let orderProducts = []
+
+      for (let i = 0; i < productIDs.length; i++) {
+        const product = await productRepository.findOneOrFail({
+          where: { id: productIDs[i].id },
+        })
+
+        const orderProduct = new OrderProduct()
+        orderProduct.product = product
+        orderProduct.quantity = productIDs[i].quantity
+        orderProduct.size = productIDs[i].size
+        orderProduct.orderId = order.id
+        orderProduct.productId = product.id
+
+        totalPrice += product.price
+
+        orderProducts.push(orderProduct)
+      }
+
+      if (deliveryDate) {
+        deliveryDate = +new Date(deliveryDate)
+      } else {
+        deliveryDate = order.createdAt
+      }
+
+      order.orderProducts = orderProducts
+
       if (fullName && phone) {
         const customer = await customerRepository.findOne({
           where: { phone, fullName },
@@ -232,6 +260,16 @@ class OrderController {
           order.customer = savedCustomer
         } else {
           order.customer = customer
+
+          if (customer.cashback) {
+            const cashbackMoney = (totalPrice * customer.cashback) / 100
+            
+            customer.cashback_money = customer.cashback_money
+              ? customer.cashback_money + cashbackMoney
+              : cashbackMoney
+
+            await customerRepository.save(customer)
+          }
         }
       }
 
@@ -247,36 +285,7 @@ class OrderController {
         await driverRepository.save(orderDriver)
       }
 
-      let orderProducts = []
-
-      if (!(fullName && phone && address && productIDs.length)) {
-        return res.status(400).send({ message: 'Պարամետրերը բացակայում են' })
-      }
-
-      for (let i = 0; i < productIDs.length; i++) {
-        const product = await productRepository.findOneOrFail({
-          where: { id: productIDs[i].id },
-        })
-
-        const orderProduct = new OrderProduct()
-        orderProduct.product = product
-        orderProduct.quantity = productIDs[i].quantity
-        orderProduct.size = productIDs[i].size
-        orderProduct.orderId = order.id
-        orderProduct.productId = product.id
-
-        orderProducts.push(orderProduct)
-      }
-
-      if (deliveryDate) {
-        deliveryDate = +new Date(deliveryDate)
-      } else {
-        deliveryDate = order.createdAt
-      }
-
-      order.orderProducts = orderProducts
       order.status = OrderStatuses.RECEIVED
-
       const createdOrder = await orderRepository.save(order)
 
       const options: DateTimeFormatOptions = {

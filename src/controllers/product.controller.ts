@@ -84,7 +84,7 @@ class ProductController {
       const searchTerms = getSearches(req)
       const productRepository = getRepository(Product)
       const queryBuilder = productRepository.createQueryBuilder('product')
-      const columns = ['title', 'brand', 'country', 'color']
+      const columns = ['title', 'brand', 'color', 'category']
 
       const products = await queryBuilder
         .leftJoinAndSelect('product.category', 'category')
@@ -127,8 +127,6 @@ class ProductController {
           images: await getImageUrls(`products/${product.id}`),
         })),
       )
-
-      console.log(productsWithImages)
 
       return res.send({
         success: true,
