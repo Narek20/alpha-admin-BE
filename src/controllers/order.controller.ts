@@ -255,6 +255,9 @@ class OrderController {
             phone,
           })
 
+          customer.address = order.address
+          customer.address2 = order.address2
+
           const savedCustomer = await customerRepository.save(customer)
 
           order.customer = savedCustomer
