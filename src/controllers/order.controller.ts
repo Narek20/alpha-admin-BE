@@ -1,12 +1,11 @@
 import { Request, Response } from 'express'
-import { Brackets, Like, getRepository } from 'typeorm'
+import { Brackets, ILike, getRepository } from 'typeorm'
 import { Order } from '../entities/orders.entity'
 import { Driver } from '../entities/driver.entity'
 import { Product } from '../entities/products.entity'
 import { OrderProduct } from '../entities/orderProducts.entity'
 import { getImageUrls } from '../services/firbase.service'
 import { getOrderQueries, getSearches } from '../utils/getFilterQueries'
-import { DriverStatus } from '../types/types/driver.types'
 import { OrderStatuses } from '../types/types/order.types'
 import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
 import { Customer } from '../entities/customer.entity'
@@ -87,9 +86,9 @@ class OrderController {
                       }
 
                       if (columnIndex === 0) {
-                        innerQb.where({ [column]: Like(`%${searchTerm}%`) })
+                        innerQb.where({ [column]: ILike(`%${searchTerm}%`) })
                       } else {
-                        innerQb.orWhere({ [column]: Like(`%${searchTerm}%`) })
+                        innerQb.orWhere({ [column]: ILike(`%${searchTerm}%`) })
                       }
                     })
                   }),
@@ -108,9 +107,9 @@ class OrderController {
                       }
 
                       if (columnIndex === 0) {
-                        innerQb.where({ [column]: Like(`%${searchTerm}%`) })
+                        innerQb.where({ [column]: ILike(`%${searchTerm}%`) })
                       } else {
-                        innerQb.orWhere({ [column]: Like(`%${searchTerm}%`) })
+                        innerQb.orWhere({ [column]: ILike(`%${searchTerm}%`) })
                       }
                     })
                   }),
@@ -266,7 +265,7 @@ class OrderController {
 
           if (customer.cashback) {
             const cashbackMoney = (totalPrice * customer.cashback) / 100
-            
+
             customer.cashback_money = customer.cashback_money
               ? customer.cashback_money + cashbackMoney
               : cashbackMoney
