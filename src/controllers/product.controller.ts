@@ -1,7 +1,7 @@
 import { Category } from './../entities/category.entity'
 import { Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
-import { Brackets, ILike, getRepository } from 'typeorm'
+import { Between, Brackets, ILike, getRepository } from 'typeorm'
 import {
   getImageUrls,
   removeReference,
@@ -84,7 +84,7 @@ class ProductController {
       const searchTerms = getSearches(req)
       const productRepository = getRepository(Product)
       const queryBuilder = productRepository.createQueryBuilder('product')
-      const columns = ['title', 'brand', 'color', 'category']
+      const columns = ['title', 'brand', 'color', 'category', 'price']
 
       const products = await queryBuilder
         .leftJoinAndSelect('product.category', 'category')
@@ -96,9 +96,35 @@ class ProductController {
                   new Brackets((innerQb) => {
                     columns.forEach((column, columnIndex) => {
                       if (columnIndex === 0) {
-                        innerQb.where({ [column]: ILike(`%${searchTerm}%`) })
+                        if (column === 'price') {
+                          const between = searchTerm
+                            .split(',')
+                            .map((num) => +num)
+                          if (!between.some((num) => isNaN(num))) {
+                            innerQb.where({
+                              [column]: Between(between[0], between[1]),
+                            })
+                          }
+                        } else {
+                          innerQb.where({
+                            [column]: ILike(`%${searchTerm}%`),
+                          })
+                        }
                       } else {
-                        innerQb.orWhere({ [column]: ILike(`%${searchTerm}%`) })
+                        if (column === 'price') {
+                          const between = searchTerm
+                            .split(',')
+                            .map((num) => +num)
+                          if (!between.some((num) => isNaN(num))) {
+                            innerQb.orWhere({
+                              [column]: Between(between[0], between[1]),
+                            })
+                          }
+                        } else {
+                          innerQb.orWhere({
+                            [column]: ILike(`%${searchTerm}%`),
+                          })
+                        }
                       }
                     })
                   }),
@@ -108,9 +134,35 @@ class ProductController {
                   new Brackets((innerQb) => {
                     columns.forEach((column, columnIndex) => {
                       if (columnIndex === 0) {
-                        innerQb.where({ [column]: ILike(`%${searchTerm}%`) })
+                        if (column === 'price') {
+                          const between = searchTerm
+                            .split(',')
+                            .map((num) => +num)
+                          if (!between.some((num) => isNaN(num))) {
+                            innerQb.where({
+                              [column]: Between(between[0], between[1]),
+                            })
+                          }
+                        } else {
+                          innerQb.where({
+                            [column]: ILike(`%${searchTerm}%`),
+                          })
+                        }
                       } else {
-                        innerQb.orWhere({ [column]: ILike(`%${searchTerm}%`) })
+                        if (column === 'price') {
+                          const between = searchTerm
+                            .split(',')
+                            .map((num) => +num)
+                          if (!between.some((num) => isNaN(num))) {
+                            innerQb.orWhere({
+                              [column]: Between(between[0], between[1]),
+                            })
+                          }
+                        } else {
+                          innerQb.orWhere({
+                            [column]: ILike(`%${searchTerm}%`),
+                          })
+                        }
                       }
                     })
                   }),
