@@ -81,7 +81,7 @@ class DriverController {
       if (!driverToRemove) {
         return res
           .status(400)
-          .send({ success: false, message: 'Ապրանքը չի գտնվել' })
+          .send({ success: false, message: 'Առաքիչը չի գտնվել' })
       }
 
       await driverRepository.remove(driverToRemove)

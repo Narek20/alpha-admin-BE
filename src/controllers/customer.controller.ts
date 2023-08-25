@@ -156,6 +156,32 @@ class CustomerController {
       return res.send({ success: false, message: err.message })
     }
   }
+
+  async getAddress(req: Request, res: Response) {
+    try {
+      const { phone, fullName } = req.params
+
+      const driverRepository = getRepository(Customer)
+
+      const customer = await driverRepository.findOneOrFail({
+        where: { phone, fullName },
+      })
+
+      if (!customer) {
+        return res
+          .status(400)
+          .send({ success: false, message: 'Հաճախորդը չի գտնվել' })
+      }
+
+      return res.send({
+        success: true,
+        data: customer,
+        message: 'Տվյալները պահպանված են',
+      })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
 }
 
 const customerController = CustomerController.get()

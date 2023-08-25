@@ -32,6 +32,13 @@ class CustomerRoutes {
        * Update customer
        */
       .put(CustomerController.update)
+
+    this.router
+      .route('/address/:phone/:fullName')
+      /**
+       * Get customer address
+       */
+      .get(CustomerController.getAddress)
   }
 
   /**
