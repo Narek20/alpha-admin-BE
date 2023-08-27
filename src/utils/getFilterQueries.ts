@@ -58,11 +58,9 @@ export const getOrderQueries = (
   return filter
 }
 
-export const getSearches = (req: Request): string[] => {
-  const queries = req.query
-
-  if (queries.search && typeof queries.search === 'string') {
-    const searchValues = queries.search.split(' ')
+export const getSearches = (search: string): string[] => {
+  if (search) {
+    const searchValues = search.split(' ')
 
     return searchValues
   }

@@ -51,7 +51,7 @@ class ProductRoutes {
       /**
        * search items
        */
-      .get(ProductController.searchProducts)
+      .post(ProductController.searchProducts)
   }
 
   /**

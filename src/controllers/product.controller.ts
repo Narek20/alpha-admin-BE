@@ -1,7 +1,7 @@
 import { Category } from './../entities/category.entity'
 import { Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
-import { Between, Brackets, ILike, getRepository } from 'typeorm'
+import { Between, Brackets, ILike, In, getRepository } from 'typeorm'
 import {
   getImageUrls,
   removeReference,
@@ -81,7 +81,13 @@ class ProductController {
 
   async searchProducts(req: Request, res: Response) {
     try {
-      const searchTerms = getSearches(req)
+      let { categories, params } = req.body
+
+      if (categories) {
+        categories = categories.split(' ')
+      }
+
+      const searchTerms = getSearches(params?.search)
       const productRepository = getRepository(Product)
       const queryBuilder = productRepository.createQueryBuilder('product')
       const columns = ['title', 'brand', 'color', 'category', 'price']
@@ -105,6 +111,10 @@ class ProductController {
                               [column]: Between(between[0], between[1]),
                             })
                           }
+                        } else if (column === 'category' && categories.length) {
+                          innerQb.where({
+                            [column]: In(categories),
+                          })
                         } else {
                           innerQb.where({
                             [column]: ILike(`%${searchTerm}%`),
@@ -120,6 +130,10 @@ class ProductController {
                               [column]: Between(between[0], between[1]),
                             })
                           }
+                        } else if (column === 'category' && categories?.length) {
+                          innerQb.orWhere({
+                            [column]: In(categories),
+                          })
                         } else {
                           innerQb.orWhere({
                             [column]: ILike(`%${searchTerm}%`),
@@ -143,6 +157,10 @@ class ProductController {
                               [column]: Between(between[0], between[1]),
                             })
                           }
+                        } else if (column === 'category' && categories.length) {
+                          innerQb.where({
+                            [column]: In(categories),
+                          })
                         } else {
                           innerQb.where({
                             [column]: ILike(`%${searchTerm}%`),
@@ -158,6 +176,10 @@ class ProductController {
                               [column]: Between(between[0], between[1]),
                             })
                           }
+                        } else if (column === 'category' && categories.length) {
+                          innerQb.orWhere({
+                            [column]: In(categories),
+                          })
                         } else {
                           innerQb.orWhere({
                             [column]: ILike(`%${searchTerm}%`),

@@ -17,7 +17,7 @@ class CommonController {
 
   async searchAll(req: Request, res: Response) {
     try {
-      const searchTerms = getSearches(req)
+      const searchTerms = getSearches(req.query?.search as string)
       const orderRepository = getRepository(Order)
       const queryBuilder = orderRepository.createQueryBuilder('order')
       const order = await orderRepository.find()
