@@ -124,10 +124,10 @@ class CustomerController {
       const id = parseInt(req.params.id)
       const { fullName, phone } = req.body
 
-      const driverRepository = getRepository(Customer)
+      const customerRepository = getRepository(Customer)
       const orderRepository = getRepository(Order)
 
-      const customer = await driverRepository.findOneOrFail({
+      const customer = await customerRepository.findOneOrFail({
         where: { id },
       })
 
@@ -142,7 +142,7 @@ class CustomerController {
         await orderRepository.save(order)
       }
 
-      const savedCustomer = await driverRepository.save({
+      const savedCustomer = await customerRepository.save({
         ...customer,
         ...req.body,
       })
@@ -161,9 +161,9 @@ class CustomerController {
     try {
       const { phone, fullName } = req.params
 
-      const driverRepository = getRepository(Customer)
+      const customerRepository = getRepository(Customer)
 
-      const customer = await driverRepository.findOneOrFail({
+      const customer = await customerRepository.findOneOrFail({
         where: { phone, fullName },
       })
 
@@ -177,6 +177,34 @@ class CustomerController {
         success: true,
         data: customer,
         message: 'Տվյալները պահպանված են',
+      })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
+
+  async remove(req: Request, res: Response) {
+    try {
+      const id = parseInt(req.params.id)
+
+      const customerRepository = getRepository(Customer)
+
+      const customer = await customerRepository.findOneOrFail({
+        where: { id },
+      })
+
+      if (!customer) {
+        return res
+          .status(400)
+          .send({ success: false, message: 'Հաճախորդը չի գտնվել' })
+      }
+
+      await customerRepository.remove(customer)
+
+      return res.send({
+        success: true,
+        data: customer,
+        message: 'Հաճախորդը հեռացված է',
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })

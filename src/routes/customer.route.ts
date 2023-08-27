@@ -33,6 +33,13 @@ class CustomerRoutes {
        */
       .put(CustomerController.update)
 
+      this.router
+      .route('/:id')
+      /**
+       * Delete customer
+       */
+      .delete(CustomerController.remove)
+
     this.router
       .route('/address/:phone/')
       /**
