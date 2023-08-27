@@ -82,6 +82,7 @@ class ProductController {
   async searchProducts(req: Request, res: Response) {
     try {
       let { categories, params } = req.body
+      const { take = 10, skip = 0 } = req.query
 
       if (categories) {
         categories = categories.split(' ')
@@ -130,7 +131,10 @@ class ProductController {
                               [column]: Between(between[0], between[1]),
                             })
                           }
-                        } else if (column === 'category' && categories?.length) {
+                        } else if (
+                          column === 'category' &&
+                          categories?.length
+                        ) {
                           innerQb.orWhere({
                             [column]: In(categories),
                           })
@@ -193,7 +197,11 @@ class ProductController {
             })
           }),
         )
+        .take(+take)
+        .skip(+skip * +take)
         .getMany()
+
+      const count = await queryBuilder.getCount()
 
       const productsWithImages = await Promise.all(
         products.map(async (product) => ({
@@ -205,6 +213,11 @@ class ProductController {
       return res.send({
         success: true,
         data: productsWithImages,
+        pagination: {
+          count,
+          take: +take,
+          skip: +skip,
+        },
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })
