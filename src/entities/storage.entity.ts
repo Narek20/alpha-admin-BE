@@ -2,8 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  OneToMany,
+  ManyToMany,
   JoinTable,
 } from 'typeorm'
 import { Product } from './products.entity'
@@ -17,21 +16,19 @@ export class Storage {
     type: 'varchar',
     length: 255,
   })
-  storage: string
+  title: string
 
-  @Column({
-    type: 'varchar',
-    length: 255,
+  @ManyToMany(() => Product)
+  @JoinTable({
+    name: 'storage_product',
+    joinColumn: {
+      name: 'storageId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'productId',
+      referencedColumnName: 'id',
+    },
   })
-  importDate: string
-
-  @OneToMany(() => Product, (product) => product)
   products: Product[]
-
-  @JoinTable({ name: 'product' })
-  @CreateDateColumn({ type: 'timestamp' })
-  createdAt: Date
-
-  @CreateDateColumn({ type: 'timestamp' })
-  updatedAt: Date
 }

@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { getRepository } from 'typeorm'
 import { Storage } from '../entities/storage.entity'
 import { Product } from '../entities/products.entity'
+import { StorageProduct } from '../entities/storageProduct.entity'
 
 class StorageController {
   private static instance: StorageController
@@ -17,9 +18,28 @@ class StorageController {
   async getAll(req: Request, res: Response) {
     try {
       const storageRepository = getRepository(Storage)
-      const Storages = await storageRepository.find()
+      const storages = await storageRepository.find()
 
-      return res.send({ success: true, data: Storages })
+      return res.send({ success: true, data: storages })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
+
+  async getImports(req: Request, res: Response) {
+    try {
+      const storageProductRepository = getRepository(StorageProduct)
+      const productStorages = await storageProductRepository.find({
+        relations: ['storage', 'product'],
+      })
+
+      const filteredStorages = productStorages.map((productStorage) => ({
+        ...productStorage,
+        product: productStorage.product.title,
+        title: productStorage.storage.title,
+      }))
+
+      return res.send({ success: true, data: filteredStorages })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
@@ -27,13 +47,20 @@ class StorageController {
 
   async create(req: Request, res: Response) {
     try {
-      const { productIDs } = req.body
+      const { productIDs, title, importDate } = req.body
       const storageRepository = getRepository(Storage)
       const productRepository = getRepository(Product)
+      const storageProductRepository = getRepository(StorageProduct)
 
-      const storage: Storage = Object.assign(new Storage(), {
-        ...req.body,
-      })
+      let storage = await storageRepository.findOne({ where: { title } })
+
+      if (!storage) {
+        storage = Object.assign(new Storage(), {
+          ...req.body,
+        })
+      }
+
+      const savedStorage = await storageRepository.save(storage)
 
       const products: Product[] = []
 
@@ -64,15 +91,20 @@ class StorageController {
           ...product,
           sizes: [...product.sizes, { smSize, quantity, size }],
         })
+
+        const storageProduct = Object.assign(new StorageProduct(), {
+          storageId: savedStorage.id,
+          productId: id,
+          quantity,
+          size,
+          importDate,
+        })
+
+        await storageProductRepository.save(storageProduct)
       }
-
-      storage.products = products
-
-      const savedStorage = await storageRepository.save(storage)
 
       return res.send({
         success: true,
-        data: savedStorage,
         message: 'Ներկրումը գրանցված է',
       })
     } catch (err) {

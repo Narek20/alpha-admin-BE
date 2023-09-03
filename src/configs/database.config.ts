@@ -8,6 +8,7 @@ import { Storage } from '../entities/storage.entity'
 import { Category } from '../entities/category.entity'
 import { Customer } from '../entities/customer.entity'
 import { OrderProduct } from '../entities/orderProducts.entity'
+import { StorageProduct } from '../entities/storageProduct.entity'
 import env from '../env/env.variables'
 
 export const DatabaseConfig = {
@@ -27,6 +28,7 @@ export const DatabaseConfig = {
     Category,
     Customer,
     OrderProduct,
+    StorageProduct,
   ],
   synchronize: false,
   migrations: ['src/migrations'],

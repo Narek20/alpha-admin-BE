@@ -19,6 +19,13 @@ class StorageRoutes {
        */
       .get(StorageController.getAll)
 
+      this.router
+      .route('/imports')
+      /**
+       * Get all storages
+       */
+      .get(StorageController.getImports)
+
     this.router
       .route('/create')
       /**
