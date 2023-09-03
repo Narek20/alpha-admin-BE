@@ -230,7 +230,7 @@ class OrderController {
         orderProduct.orderId = order.id
         orderProduct.productId = product.id
 
-        totalPrice += product.price
+        totalPrice += product.price * productIDs[i].quantity
 
         orderProducts.push(orderProduct)
       }
