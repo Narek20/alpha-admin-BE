@@ -15,6 +15,7 @@ export class UpdateStorageTable1693739407221 implements MigrationInterface {
         name: 'title',
         type: 'varchar',
         length: '255',
+        isNullable: true
       }),
     )
   }

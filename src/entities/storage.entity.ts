@@ -15,6 +15,7 @@ export class Storage {
   @Column({
     type: 'varchar',
     length: 255,
+    nullable: true
   })
   title: string
 
