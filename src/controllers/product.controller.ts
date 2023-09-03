@@ -112,7 +112,10 @@ class ProductController {
                               [column]: Between(between[0], between[1]),
                             })
                           }
-                        } else if (column === 'category' && categories.length) {
+                        } else if (
+                          column === 'category' &&
+                          categories?.length
+                        ) {
                           innerQb.where({
                             [column]: In(categories),
                           })
@@ -161,7 +164,10 @@ class ProductController {
                               [column]: Between(between[0], between[1]),
                             })
                           }
-                        } else if (column === 'category' && categories.length) {
+                        } else if (
+                          column === 'category' &&
+                          categories?.length
+                        ) {
                           innerQb.where({
                             [column]: In(categories),
                           })
@@ -180,7 +186,10 @@ class ProductController {
                               [column]: Between(between[0], between[1]),
                             })
                           }
-                        } else if (column === 'category' && categories.length) {
+                        } else if (
+                          column === 'category' &&
+                          categories?.length
+                        ) {
                           innerQb.orWhere({
                             [column]: In(categories),
                           })
