@@ -345,11 +345,13 @@ class OrderController {
       }
 
       let deliveryDate: Date | string
-      if (req.body.deliveryDate?.includes('/')) {
-        const [day, month, year] = req.body.deliveryDate.split('/')
-        deliveryDate = new Date(`${month}/${day}/${year}`)
-      } else {
-        deliveryDate = new Date(req.body.deliveryDate)
+      if (req.body.deliveryDate) {
+        if (req.body.deliveryDate?.includes('/')) {
+          const [day, month, year] = req.body.deliveryDate.split('/')
+          deliveryDate = new Date(`${month}/${day}/${year}`)
+        } else {
+          deliveryDate = new Date(req.body.deliveryDate)
+        }
       }
 
       const savedOrder = await orderRepository.save({
