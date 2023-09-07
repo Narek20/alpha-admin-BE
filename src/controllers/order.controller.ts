@@ -62,6 +62,7 @@ class OrderController {
 
   async searchOrders(req: Request, res: Response) {
     try {
+      const { take = 10, skip = 0, status } = req.query
       const searchTerms = getSearches(req.query?.search as string)
       const orderRepository = getRepository(Order)
       const queryBuilder = orderRepository.createQueryBuilder('order')
@@ -118,6 +119,9 @@ class OrderController {
             })
           }),
         )
+        .andWhere('order.status = :status', { status })
+        .take(+take)
+        .skip(+skip)
         .getMany()
 
       const formattedOrders = orders.map((order) => {
@@ -134,7 +138,14 @@ class OrderController {
         return { ...order, createdAt, deliveryDate }
       })
 
-      return res.send({ success: true, data: formattedOrders })
+      const statusCounts = await orderRepository
+        .createQueryBuilder('order')
+        .select('order.status', 'status')
+        .addSelect('COUNT(*)', 'count')
+        .groupBy('order.status')
+        .getRawMany()
+
+      return res.send({ success: true, data: formattedOrders, statusCounts })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
