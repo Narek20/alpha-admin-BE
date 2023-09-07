@@ -47,6 +47,13 @@ class OrderRoutes {
        * Remove single order
        */
       .delete(OrderController.remove)
+
+    this.router
+      .route('/status/counts')
+      /**
+       * Get order status counts
+       */
+      .get(OrderController.getOrderCounts)
   }
 
   /**

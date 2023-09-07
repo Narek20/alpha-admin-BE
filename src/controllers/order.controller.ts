@@ -138,14 +138,7 @@ class OrderController {
         return { ...order, createdAt, deliveryDate }
       })
 
-      const statusCounts = await orderRepository
-        .createQueryBuilder('order')
-        .select('order.status', 'status')
-        .addSelect('COUNT(*)', 'count')
-        .groupBy('order.status')
-        .getRawMany()
-
-      return res.send({ success: true, data: formattedOrders, statusCounts })
+      return res.send({ success: true, data: formattedOrders })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
@@ -472,6 +465,26 @@ class OrderController {
       return res.send({ success: true, message: 'Ապրանքը հեռացված է' })
     } catch (err) {
       return res.status(500).send({ success: false, message: err.message })
+    }
+  }
+
+  async getOrderCounts(req: Request, res: Response) {
+    try {
+      const orderRepository = getRepository(Order)
+
+      const statusCounts = await orderRepository
+        .createQueryBuilder('order')
+        .select('order.status', 'status')
+        .addSelect('COUNT(*)', 'count')
+        .groupBy('order.status')
+        .getRawMany()
+
+      return res.send({
+        success: true,
+        data: statusCounts,
+      })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
     }
   }
 }
