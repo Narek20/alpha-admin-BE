@@ -74,8 +74,8 @@ class StorageController {
             return {
               ...productSizes,
               quantity: productSizes.quantity
-                ? productSizes.quantity
-                : 0 + quantity,
+                ? productSizes.quantity + quantity
+                : quantity,
             }
           }
 
