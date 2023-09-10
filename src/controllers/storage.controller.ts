@@ -105,7 +105,7 @@ class StorageController {
 
       return res.send({
         success: true,
-        message: 'Ներկրումը գրանցված է',
+        message: 'Ապրանքը հաջողությամբ ավելացվեց',
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })
