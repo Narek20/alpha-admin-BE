@@ -227,6 +227,14 @@ class OrderController {
           where: { id: productIDs[i].id },
         })
 
+        const updatedSizes = product.sizes.map(({ size, smSize, quantity }) =>
+          size === productIDs[i].size
+            ? { size, smSize, quantity: quantity - productIDs[i].quantity }
+            : { size, smSize, quantity },
+        )
+
+        await productRepository.save({ ...product, sizes: updatedSizes })
+
         const orderProduct = new OrderProduct()
         orderProduct.product = product
         orderProduct.quantity = productIDs[i].quantity
