@@ -54,6 +54,13 @@ class OrderRoutes {
        * Get order status counts
        */
       .get(OrderController.getOrderCounts)
+
+    this.router
+      .route('/status')
+      /**
+       * Change order status
+       */
+      .patch(OrderController.changeStatus)
   }
 
   /**

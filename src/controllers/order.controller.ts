@@ -487,6 +487,25 @@ class OrderController {
       return res.send({ success: false, message: err.message })
     }
   }
+
+  async changeStatus(req: Request, res: Response) {
+    try {
+      const { orderIds, newStatus } = req.body
+      const orderRepository = getRepository(Order)
+      await orderRepository
+        .createQueryBuilder()
+        .update(Order)
+        .set({ status: newStatus })
+        .whereInIds(orderIds)
+        .execute()
+      return res.send({
+        success: true,
+        message: 'Ապրանքների ստատուսները փոփոխված են',
+      })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
 }
 
 const orderController = OrderController.get()
