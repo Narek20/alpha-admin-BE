@@ -30,7 +30,7 @@ class StorageController {
     try {
       const storageProductRepository = getRepository(StorageProduct)
       const productStorages = await storageProductRepository.find({
-        relations: ['storage', 'product'],
+        relations: ['storage', 'product', 'user'],
       })
 
       const filteredStorages = productStorages.map((productStorage) => ({
@@ -47,9 +47,9 @@ class StorageController {
 
   async create(req: Request, res: Response) {
     try {
-      const { productIDs, title, importDate } = req.body
-      const storageRepository = getRepository(Storage)
+      const { productIDs, title, importDate, userId } = req.body
       const productRepository = getRepository(Product)
+      const storageRepository = getRepository(Storage)
       const storageProductRepository = getRepository(StorageProduct)
 
       let storage = await storageRepository.findOne({ where: { title } })
@@ -98,6 +98,7 @@ class StorageController {
           quantity,
           size,
           importDate,
+          userId
         })
 
         await storageProductRepository.save(storageProduct)

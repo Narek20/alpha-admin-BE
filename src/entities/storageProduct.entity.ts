@@ -1,6 +1,7 @@
-import { Entity, Column, ManyToOne, PrimaryColumn } from 'typeorm'
+import { Entity, Column, ManyToOne, PrimaryColumn, JoinColumn } from 'typeorm'
 import { Storage } from './storage.entity'
 import { Product } from './products.entity'
+import { User } from './users.entity'
 
 @Entity('storage_product')
 export class StorageProduct {
@@ -43,4 +44,11 @@ export class StorageProduct {
 
   @ManyToOne(() => Product, (product) => product)
   product: Product
+
+  @Column()
+  userId: number;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'userId' })
+  user: User;
 }
