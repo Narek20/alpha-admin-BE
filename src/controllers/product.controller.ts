@@ -85,7 +85,7 @@ class ProductController {
       const { take = 10, skip = 0 } = req.query
 
       if (categories) {
-        categories = categories.split(' ')
+        categories = categories.split(',')
       }
 
       const searchTerms = getSearches(params?.search)
