@@ -47,6 +47,7 @@ export const getOrderQueries = (
     } else if (
       key === 'skip' ||
       key === 'take' ||
+      key === 'count' ||
       (key === 'status' && req.query[key] === 'Բոլորը')
     ) {
       return acc

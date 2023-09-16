@@ -27,10 +27,10 @@ class OrderController {
       const queries = getOrderQueries(req)
 
       const orderRepository = getRepository(Order)
-      const orders = await orderRepository.find({
+      const [orders, count] = await orderRepository.findAndCount({
         where: queries,
-        skip: +skip,
         take: +take,
+        skip: +skip * +take,
         order: {
           createdAt: 'DESC',
         },
@@ -54,7 +54,15 @@ class OrderController {
         return { ...order, createdAt, deliveryDate }
       })
 
-      return res.send({ success: true, data: formattedOrders })
+      return res.send({
+        success: true,
+        data: formattedOrders,
+        pagination: {
+          count,
+          take: +take,
+          skip: +skip,
+        },
+      })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
@@ -121,8 +129,10 @@ class OrderController {
         )
         .andWhere('order.status = :status', { status })
         .take(+take)
-        .skip(+skip)
+        .skip(+skip * +take)
         .getMany()
+
+      const count = await queryBuilder.getCount()
 
       const formattedOrders = orders.map((order) => {
         let deliveryDate: string | Date = order.deliveryDate
@@ -138,7 +148,15 @@ class OrderController {
         return { ...order, createdAt, deliveryDate }
       })
 
-      return res.send({ success: true, data: formattedOrders })
+      return res.send({
+        success: true,
+        data: formattedOrders,
+        pagination: {
+          count,
+          take: +take,
+          skip: +skip,
+        },
+      })
     } catch (err) {
       return res.send({ success: false, message: err.message })
     }
@@ -276,7 +294,7 @@ class OrderController {
           order.customer = customer
 
           if (customer.cashback) {
-            const cashbackMoney = (totalPrice * customer.cashback) / 100
+            const cashbackMoney = Math.floor((totalPrice * customer.cashback) / 100)
 
             customer.cashback_money = customer.cashback_money
               ? customer.cashback_money + cashbackMoney
