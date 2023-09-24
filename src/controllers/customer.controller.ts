@@ -64,7 +64,6 @@ class CustomerController {
         .leftJoinAndSelect('customer.orders', 'order')
         .leftJoinAndSelect('order.orderProducts', 'order_product')
         .leftJoinAndSelect('order_product.product', 'product')
-        .leftJoinAndSelect('product.category', 'category')
         .where({ phone: phone })
         .getOne()
 

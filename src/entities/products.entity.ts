@@ -44,6 +44,12 @@ export class Product {
   title: string
 
   @Column({
+    type: 'varchar',
+    length: 255,
+  })
+  category: string
+
+  @Column({
     type: 'json',
     nullable: true,
   })
@@ -103,10 +109,6 @@ export class Product {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date
-
-  @ManyToOne(() => Category)
-  @JoinColumn({ name: 'category' }) 
-  category: Category
 
   @ManyToMany(() => Order)
   @JoinTable({ name: 'order_product' })

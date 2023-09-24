@@ -82,7 +82,6 @@ class CommonController {
         const columns = ['title', 'brand', 'color', 'category', 'price']
 
         const products = await queryBuilder
-          .leftJoinAndSelect('product.category', 'category')
           .where(
             new Brackets((outerQb) => {
               searchTerms.forEach((searchTerm, index) => {

@@ -59,7 +59,6 @@ class ProductController {
       const productRepository = getRepository(Product)
       const product = await productRepository.findOne({
         where: { id },
-        relations: ['category'],
       })
 
       if (!product) {
@@ -94,7 +93,6 @@ class ProductController {
       const columns = ['title', 'brand', 'color', 'category', 'price']
 
       const products = await queryBuilder
-        .leftJoinAndSelect('product.category', 'category')
         .where(
           new Brackets((outerQb) => {
             searchTerms.forEach((searchTerm, index) => {
@@ -248,7 +246,6 @@ class ProductController {
       }
 
       const productRepository = getRepository(Product)
-      const categoryRepository = getRepository(Category)
 
       if (
         !(
@@ -263,14 +260,9 @@ class ProductController {
         return res.status(400).send({ message: 'Պարամետրերը բացակայում են' })
       }
 
-      const selectedCategory = await categoryRepository.findOne({
-        where: { title: category },
-      })
-
       const product: Product = Object.assign(new Product(), {
         ...req.body,
         sizes,
-        category: selectedCategory,
         additionalInfo,
       })
 
@@ -300,7 +292,6 @@ class ProductController {
       const categoryRepository = getRepository(Category)
       const product: Product = await productRepository.findOneOrFail({
         where: { id: +id },
-        relations: ['category'],
       })
 
       const selectedCategory = await categoryRepository.findOne({
@@ -335,7 +326,6 @@ class ProductController {
       const savedProduct = await productRepository.save({
         ...product,
         ...req.body,
-        category: selectedCategory,
         sizes,
         additionalInfo,
       })

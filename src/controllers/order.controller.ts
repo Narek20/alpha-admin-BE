@@ -171,7 +171,6 @@ class OrderController {
         .createQueryBuilder('order')
         .leftJoin('order.orderProducts', 'orderProduct')
         .leftJoinAndSelect('orderProduct.product', 'product')
-        .leftJoinAndSelect('product.category', 'category')
         .select([
           'order',
           'product',
