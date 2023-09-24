@@ -9,6 +9,7 @@ import { getOrderQueries, getSearches } from '../utils/getFilterQueries'
 import { OrderStatuses } from '../types/types/order.types'
 import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
 import { Customer } from '../entities/customer.entity'
+import { insertData } from '../../lol'
 
 class OrderController {
   private static instance: OrderController
@@ -294,7 +295,9 @@ class OrderController {
           order.customer = customer
 
           if (customer.cashback) {
-            const cashbackMoney = Math.floor((totalPrice * customer.cashback) / 100)
+            const cashbackMoney = Math.floor(
+              (totalPrice * customer.cashback) / 100,
+            )
 
             customer.cashback_money = customer.cashback_money
               ? customer.cashback_money + cashbackMoney
@@ -330,6 +333,27 @@ class OrderController {
 
       const date = new Date(createdOrder.createdAt)
       const createdAt = date.toLocaleString('en-GB', options)
+
+      const { id, notes, deliveryDate: dDate } = createdOrder
+
+      const sheetsData = [
+        id,
+        fullName,
+        phone,
+        address,
+        notes,
+        totalPrice + '֏',
+        createdAt,
+        dDate.toLocaleString('en-GB', options),
+        createdOrder.orderProducts
+          .map(
+            ({ product, quantity, size }) =>
+              `${product.title}(${size}, ${quantity})`,
+          )
+          .join(', '),
+      ]
+
+      await insertData([sheetsData])
 
       return res.send({
         success: true,
