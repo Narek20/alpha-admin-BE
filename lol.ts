@@ -34,7 +34,7 @@ async function getGoogleSheetClient() {
   }
 }
 
-export async function insertData(values: string[][]) {
+async function insertData(values: string[][]) {
   const auth = new google.auth.GoogleAuth({
     keyFile: serviceAccountKeyFile,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],

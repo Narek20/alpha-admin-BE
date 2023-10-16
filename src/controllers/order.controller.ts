@@ -9,7 +9,7 @@ import { getOrderQueries, getSearches } from '../utils/getFilterQueries'
 import { OrderStatuses } from '../types/types/order.types'
 import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
 import { Customer } from '../entities/customer.entity'
-import { insertData } from '../../lol'
+// import { insertData } from '../../lol'
 
 class OrderController {
   private static instance: OrderController
@@ -352,7 +352,7 @@ class OrderController {
           .join(', '),
       ]
 
-      await insertData([sheetsData])
+      // await insertData([sheetsData])
 
       return res.send({
         success: true,
