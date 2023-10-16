@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { getRepository } from 'typeorm'
 import { Customer } from '../entities/customer.entity'
 import { Order } from '../entities/orders.entity'
-import { getImageUrls } from '../services/firbase.service'
+import { getImageUrls } from '../services/images.service'
 
 class CustomerController {
   private static instance: CustomerController
@@ -82,7 +82,7 @@ class CustomerController {
             ...orderProduct,
             product: {
               ...orderProduct.product,
-              images: await getImageUrls(`products/${orderProduct.product.id}`),
+              images: await getImageUrls(orderProduct.product.id),
             },
           })
         }

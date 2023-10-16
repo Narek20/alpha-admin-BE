@@ -7,3 +7,4 @@ temp/
 .env
 yarn-error.log
 google-creds.json
+uploads

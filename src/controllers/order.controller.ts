@@ -4,7 +4,7 @@ import { Order } from '../entities/orders.entity'
 import { Driver } from '../entities/driver.entity'
 import { Product } from '../entities/products.entity'
 import { OrderProduct } from '../entities/orderProducts.entity'
-import { getImageUrls } from '../services/firbase.service'
+import { getImageUrls } from '../services/images.service'
 import { getOrderQueries, getSearches } from '../utils/getFilterQueries'
 import { OrderStatuses } from '../types/types/order.types'
 import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
@@ -192,7 +192,7 @@ class OrderController {
 
       for (let i = 0; i < order.orderProducts.length; i++) {
         const productImages = await getImageUrls(
-          `products/${order.orderProducts[i].product.id}`,
+          order.orderProducts[i].product.id,
         )
 
         orderProducts.push({

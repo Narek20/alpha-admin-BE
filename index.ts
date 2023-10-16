@@ -14,6 +14,7 @@ app.use(
 )
 app.use(express.json())
 app.use(express.static('public'))
+app.use('/uploads', express.static('./src/uploads'))
 
 databaseConnection()
 readExcelData('./TEST.xlsx')

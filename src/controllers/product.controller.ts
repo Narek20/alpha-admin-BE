@@ -7,7 +7,7 @@ import {
   removeReference,
   updateImages,
   uploadImage,
-} from '../services/firbase.service'
+} from '../services/images.service'
 import { getSearches, getProductQueries } from '../utils/getFilterQueries'
 
 class ProductController {
@@ -36,7 +36,7 @@ class ProductController {
 
       const productsWithImages = products[0].map(async (product) => ({
         ...product,
-        images: await getImageUrls(`products/${product.id}`),
+        images: await getImageUrls(product.id),
       }))
 
       return res.send({
@@ -69,7 +69,7 @@ class ProductController {
 
       const productWithImages = {
         ...product,
-        images: await getImageUrls(`products/${product.id}`),
+        images: await getImageUrls(product.id),
       }
 
       return res.send({ success: true, data: productWithImages })
@@ -213,7 +213,7 @@ class ProductController {
       const productsWithImages = await Promise.all(
         products.map(async (product) => ({
           ...product,
-          images: await getImageUrls(`products/${product.id}`),
+          images: await getImageUrls(product.id),
         })),
       )
 
@@ -269,10 +269,7 @@ class ProductController {
       const savedProduct = await productRepository.save(product)
 
       for (let i = 0; i < +req.files.length; i++) {
-        await uploadImage(
-          req.files[i].buffer,
-          `products/${savedProduct.id}/${i}`,
-        )
+        uploadImage(req.files[i].buffer, savedProduct.id)
       }
 
       return res.send({
@@ -320,7 +317,7 @@ class ProductController {
       }
 
       if (req.body.images || +req.files.length) {
-        await updateImages(`products/${id}`, req.body.images, imageBuffers)
+        await updateImages(id, req.body.images, imageBuffers)
       }
 
       const savedProduct = await productRepository.save({
@@ -352,8 +349,8 @@ class ProductController {
           message: 'Ապրանքը չի գտնվել',
         })
       }
-
-      await removeReference(`products/${id}`)
+      
+      await removeReference(id)
       await productRepository.remove(productToRemove)
 
       return res.send({
