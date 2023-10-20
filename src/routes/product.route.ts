@@ -52,6 +52,13 @@ class ProductRoutes {
        * search items
        */
       .post(ProductController.searchProducts)
+
+    this.router
+      .route('/hello')
+      /**
+       * search items
+       */
+      .get(ProductController.storeImagesInServer)
   }
 
   /**

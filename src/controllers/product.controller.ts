@@ -3,6 +3,7 @@ import { Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
 import { Between, Brackets, ILike, In, getRepository } from 'typeorm'
 import {
+  getFirebaseImages,
   getImageUrls,
   removeReference,
   updateImages,
@@ -361,7 +362,27 @@ class ProductController {
       return res.status(500).send({ message: err.message, result: false })
     }
   }
+
+  async storeImagesInServer(req: Request, res: Response) {
+    try {
+      const productRepository = getRepository(Product)
+      const products = await productRepository.find()
+
+      products.forEach(async (product) => {
+        await getFirebaseImages(`${product.id}`)
+      })
+
+      return res.send({
+        success: true,
+        data: []
+      })
+    } catch (err: any) {
+      return res.status(500).send({ success: false, message: err.message })
+    }
+  }
 }
+
+
 
 const productController = ProductController.get()
 export { productController as ProductController }

@@ -1,5 +1,25 @@
 import fs from 'fs'
 import { rimraf } from 'rimraf'
+import { initializeApp } from 'firebase/app'
+import {
+  getDownloadURL,
+  getStorage,
+  listAll,
+  ref,
+} from 'firebase/storage'
+import env from '../env/env.variables'
+import axios from 'axios'
+
+const firebaseConfig = {
+  apiKey: env.firebaseApiKey,
+  authDomain: env.firebaseAuthDomain,
+  projectId: env.firebaseProjectId,
+  storageBucket: env.firebaseBucketUrl,
+}
+
+const app = initializeApp(firebaseConfig)
+export const storage = getStorage(app)
+
 const path = `src/uploads`
 
 export const uploadImage = (file: ArrayBuffer, folder: string | number) => {
@@ -34,6 +54,28 @@ export const getImageUrls = (folder: string | number) => {
       }
     })
   })
+}
+
+export const getFirebaseImages = async (id: string | number) => {
+  try {
+    const storageRef = ref(storage, 'products/' + id)
+    const imageItems = (await listAll(storageRef)).items
+    const downloadUrls = []
+
+    for (let i = 0; i < imageItems.length; i++) {
+      const imageUrl = await getDownloadURL(imageItems[i])
+      const response = await axios.get(imageUrl, {
+        responseType: 'arraybuffer'
+      });
+      
+      const arrayBuffer = response.data;
+      await uploadImage(arrayBuffer, id)
+    }
+
+    return downloadUrls
+  } catch (err) {
+    throw new Error(err.message)
+  }
 }
 
 export const updateImages = async (
