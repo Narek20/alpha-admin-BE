@@ -1,12 +1,7 @@
 import fs from 'fs'
 import { rimraf } from 'rimraf'
 import { initializeApp } from 'firebase/app'
-import {
-  getDownloadURL,
-  getStorage,
-  listAll,
-  ref,
-} from 'firebase/storage'
+import { getDownloadURL, getStorage, listAll, ref } from 'firebase/storage'
 import env from '../env/env.variables'
 import axios from 'axios'
 
@@ -42,10 +37,10 @@ export const uploadImage = (file: ArrayBuffer, folder: string | number) => {
 
 export const getImageUrls = (folder: string | number) => {
   const folderPath = `${path}/${folder}`
-  return new Promise((resolve, reject) => {
+  return new Promise<string[]>((resolve, reject) => {
     fs.readdir(folderPath, (err, files) => {
       if (err) {
-        reject(err)
+        resolve([])
       } else {
         const imageItems: string[] = files.map(
           (fileName) => `uploads/${folder}/${fileName}`,
@@ -65,10 +60,10 @@ export const getFirebaseImages = async (id: string | number) => {
     for (let i = 0; i < imageItems.length; i++) {
       const imageUrl = await getDownloadURL(imageItems[i])
       const response = await axios.get(imageUrl, {
-        responseType: 'arraybuffer'
-      });
-      
-      const arrayBuffer = response.data;
+        responseType: 'arraybuffer',
+      })
+
+      const arrayBuffer = response.data
       await uploadImage(arrayBuffer, id)
     }
 
