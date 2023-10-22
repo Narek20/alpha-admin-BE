@@ -210,7 +210,7 @@ class ProductController {
         .getMany()
 
       const count = await queryBuilder.getCount()
-
+          console.log(products)
       const productsWithImages = await Promise.all(
         products.map(async (product) => ({
           ...product,
@@ -368,9 +368,9 @@ class ProductController {
       const productRepository = getRepository(Product)
       const products = await productRepository.find()
 
-      products.forEach(async (product) => {
-        await getFirebaseImages(`${product.id}`)
-      })
+      for(const product of products) {
+          await getFirebaseImages(`${product.id}`)
+      }
 
       return res.send({
         success: true,
