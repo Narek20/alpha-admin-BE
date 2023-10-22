@@ -76,6 +76,14 @@ class OrderController {
       const orderRepository = getRepository(Order)
       const queryBuilder = orderRepository.createQueryBuilder('order')
       const order = await orderRepository.find()
+
+      if(!order.length) {
+        return res.send({
+          success: false,
+          message: 'Պատվերներ չեն գտնվել'
+        })
+      }
+
       const columns = Object.keys(order[0]).slice(1)
 
       const orders = await queryBuilder
