@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { getRepository } from 'typeorm'
+import { Transaction, getConnection, getRepository } from 'typeorm'
 import { Category } from '../entities/category.entity'
 
 class CategoryController {
@@ -49,35 +49,26 @@ class CategoryController {
   async update(req: Request, res: Response) {
     try {
       const updatedCategories: Category[] = req.body
-      const categoryRepository = getRepository(Category)
 
-      const categories = await categoryRepository.find()
-
-      for (let i = 0; i < categories.length; i++) {
-        const updatedCategory = updatedCategories.find(
-          (category) => category.title === categories[i].title,
+      const connection = getConnection()
+      await connection.transaction(async (transactionalEntityManager) => {
+        const creatingCategories: Category[] = updatedCategories.map(
+          (category) => {
+            const newCategory = transactionalEntityManager.create(
+              Category,
+              category,
+            )
+            return newCategory
+          },
         )
 
-        if (updatedCategory) {
-          await categoryRepository.save(updatedCategory)
-        } else {
-          await categoryRepository.remove(categories[i])
-        }
-      }
+        await transactionalEntityManager.delete(Category, {})
+        await transactionalEntityManager.save(Category, creatingCategories)
 
-      for (let i = 0; i < updatedCategories.length; i++) {
-        if (!updatedCategories[i].title) {
-          const category: Category = Object.assign(new Category(), {
-            ...updatedCategories[i],
-          })
-
-          await categoryRepository.save(category)
-        }
-      }
-
-      return res.send({
-        success: true,
-        message: 'Կատեգորիաները պահպանված են',
+        return res.send({
+          success: true,
+          message: 'Կատեգորիաները պահպանված են',
+        })
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })
