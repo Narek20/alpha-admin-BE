@@ -368,9 +368,9 @@ class ProductController {
       const productRepository = getRepository(Product)
       const products = await productRepository.find()
 
-      for(const product of products) {
-          await getFirebaseImages(`${product.id}`)
-      }
+      products.forEach(async (product) => {
+        await getFirebaseImages(`${product.id}`)
+      })
 
       return res.send({
         success: true,
