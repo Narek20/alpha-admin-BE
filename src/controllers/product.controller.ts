@@ -366,7 +366,7 @@ class ProductController {
     try {
       const id = parseInt(req.params.id)
       const productRepository = getRepository(Product)
-      const products = await productRepository.find({where: {id: MoreThan(id)}})
+      const products = await productRepository.find({where: {id: id}})
 
       for(const product of products) {
         await getFirebaseImages(`${product.id}`)
