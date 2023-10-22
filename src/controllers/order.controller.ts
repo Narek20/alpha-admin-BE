@@ -311,6 +311,8 @@ class OrderController {
               : cashbackMoney
 
             await customerRepository.save(customer)
+
+            order.cashback = cashbackMoney
           }
         }
       }
@@ -460,10 +462,9 @@ class OrderController {
                 data.id = (
                   await orderProductRepository.findOne({ where: data })
                 ).id
-                
+
                 totalPrice += orderProduct.product.price * orderProduct.quantity
               }
-
 
               const savedOrderProduct = {
                 ...orderProduct,
@@ -504,6 +505,10 @@ class OrderController {
               : cashbackMoney
 
             await customerRepository.save(customer)
+
+            order.cashback = cashbackMoney
+
+            await orderRepository.save(order)
           }
         }
 
@@ -528,15 +533,40 @@ class OrderController {
     try {
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
+      const customerRepository = getRepository(Customer)
 
-      const orderToRemove = await orderRepository.findOneOrFail({
-        where: { id },
-      })
+      const orderToRemove = await orderRepository
+        .createQueryBuilder('order')
+        .leftJoin('order.orderProducts', 'orderProduct')
+        .leftJoinAndSelect('orderProduct.product', 'product')
+        .select([
+          'order',
+          'product',
+          'orderProduct.id',
+          'orderProduct.quantity',
+          'orderProduct.size',
+          'category',
+        ])
+        .where('order.id = :id', { id })
+        .getOne()
 
       if (!orderToRemove) {
         return res
           .status(400)
           .send({ success: false, message: 'Ապրանքը չի գտնվել' })
+      }
+      const customer = await customerRepository.findOne({
+        where: { fullName: orderToRemove.fullName, phone: orderToRemove.phone },
+      })
+
+      if (
+        customer.cashback &&
+        customer.cashback_money &&
+        orderToRemove.cashback
+      ) {
+        customer.cashback_money -= orderToRemove.cashback
+
+        await customerRepository.save(customer)
       }
 
       await orderRepository.remove(orderToRemove)

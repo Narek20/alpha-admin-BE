@@ -73,6 +73,12 @@ export class Order {
   driver: string
 
   @Column({
+    type: 'int',
+    nullable: true,
+  })
+  cashback: number
+
+  @Column({
     type: 'timestamp',
     nullable: true,
   })
