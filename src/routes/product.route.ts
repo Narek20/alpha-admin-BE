@@ -54,7 +54,7 @@ class ProductRoutes {
       .post(ProductController.searchProducts)
 
     this.router
-      .route('/hello')
+      .route('/hello/:id')
       /**
        * search items
        */

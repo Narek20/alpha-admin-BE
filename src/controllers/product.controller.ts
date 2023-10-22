@@ -1,7 +1,7 @@
 import { Category } from './../entities/category.entity'
 import { Request, Response } from 'express'
 import { Product } from '../entities/products.entity'
-import { Between, Brackets, ILike, In, getRepository } from 'typeorm'
+import { Between, Brackets, ILike, In, MoreThan, getRepository } from 'typeorm'
 import {
   getFirebaseImages,
   getImageUrls,
@@ -210,7 +210,6 @@ class ProductController {
         .getMany()
 
       const count = await queryBuilder.getCount()
-          console.log(products)
       const productsWithImages = await Promise.all(
         products.map(async (product) => ({
           ...product,
@@ -365,12 +364,13 @@ class ProductController {
 
   async storeImagesInServer(req: Request, res: Response) {
     try {
+      const id = parseInt(req.params.id)
       const productRepository = getRepository(Product)
-      const products = await productRepository.find()
+      const products = await productRepository.find({where: {id: MoreThan(id)}})
 
-      products.forEach(async (product) => {
+      for(const product of products) {
         await getFirebaseImages(`${product.id}`)
-      })
+      }
 
       return res.send({
         success: true,
