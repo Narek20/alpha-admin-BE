@@ -77,10 +77,10 @@ class OrderController {
       const queryBuilder = orderRepository.createQueryBuilder('order')
       const order = await orderRepository.find()
 
-      if(!order.length) {
+      if (!order.length) {
         return res.send({
           success: false,
-          message: 'Պատվերներ չեն գտնվել'
+          message: 'Պատվերներ չեն գտնվել',
         })
       }
 
@@ -437,6 +437,7 @@ class OrderController {
       const createdAt = createdAtDate.toISOString().split('T')[0]
 
       if (req.body.orderProducts) {
+        let totalPrice = 0
         const orderProducts: OrderProduct[] = []
 
         await Promise.all(
@@ -459,7 +460,10 @@ class OrderController {
                 data.id = (
                   await orderProductRepository.findOne({ where: data })
                 ).id
+                
+                totalPrice += orderProduct.product.price * orderProduct.quantity
               }
+
 
               const savedOrderProduct = {
                 ...orderProduct,
@@ -484,6 +488,24 @@ class OrderController {
               (await orderProductRepository.delete({ id: el.id })),
           ),
         )
+
+        if (totalPrice) {
+          const customer = await customerRepository.findOne({
+            where: { fullName: order.fullName, phone: order.phone },
+          })
+
+          if (customer.cashback) {
+            const cashbackMoney = Math.floor(
+              (totalPrice * customer.cashback) / 100,
+            )
+
+            customer.cashback_money = customer.cashback_money
+              ? customer.cashback_money + cashbackMoney
+              : cashbackMoney
+
+            await customerRepository.save(customer)
+          }
+        }
 
         return res.send({
           success: true,
