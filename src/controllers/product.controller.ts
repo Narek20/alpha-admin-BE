@@ -68,6 +68,11 @@ class ProductController {
           .send({ success: false, message: "Product wasn't found" })
       }
 
+      await productRepository.update(
+        { id: product.id },
+        { views: product.views + 1 },
+      )
+
       const productWithImages = {
         ...product,
         images: await getImageUrls(product.id),
@@ -205,6 +210,7 @@ class ProductController {
             })
           }),
         )
+        .orderBy('views', 'DESC')
         .take(+take)
         .skip(+skip * +take)
         .getMany()
@@ -349,7 +355,7 @@ class ProductController {
           message: 'Ապրանքը չի գտնվել',
         })
       }
-      
+
       await removeReference(id)
       await productRepository.remove(productToRemove)
 
@@ -366,23 +372,21 @@ class ProductController {
     try {
       const id = parseInt(req.params.id)
       const productRepository = getRepository(Product)
-      const products = await productRepository.find({where: {id: id}})
+      const products = await productRepository.find({ where: { id: id } })
 
-      for(const product of products) {
+      for (const product of products) {
         await getFirebaseImages(`${product.id}`)
       }
 
       return res.send({
         success: true,
-        data: []
+        data: [],
       })
     } catch (err: any) {
       return res.status(500).send({ success: false, message: err.message })
     }
   }
 }
-
-
 
 const productController = ProductController.get()
 export { productController as ProductController }

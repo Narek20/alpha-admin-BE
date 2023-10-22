@@ -95,6 +95,7 @@ export class Product {
 
   @Column({
     type: 'int',
+    default: 0,
   })
   purchasePrice: number
 
@@ -103,6 +104,11 @@ export class Product {
     nullable: true,
   })
   additionalInfo: AdditionalInfo[]
+
+  @Column({
+    type: 'int',
+  })
+  views: number
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
