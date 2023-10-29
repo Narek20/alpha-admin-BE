@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { Brackets, ILike, getRepository } from 'typeorm'
+import { Brackets, ILike, In, getRepository } from 'typeorm'
 import { Order } from '../entities/orders.entity'
 import { Driver } from '../entities/driver.entity'
 import { Product } from '../entities/products.entity'
@@ -263,13 +263,13 @@ class OrderController {
           where: { id: productIDs[i].id },
         })
 
-        const updatedSizes = product.sizes.map(({ size, smSize, quantity }) =>
-          size === productIDs[i].size
-            ? { size, smSize, quantity: quantity - productIDs[i].quantity }
-            : { size, smSize, quantity },
-        )
+        // const updatedSizes = product.sizes.map(({ size, smSize, quantity }) =>
+        //   size === productIDs[i].size
+        //     ? { size, smSize, quantity: quantity - productIDs[i].quantity }
+        //     : { size, smSize, quantity },
+        // )
 
-        await productRepository.save({ ...product, sizes: updatedSizes })
+        // await productRepository.save({ ...product, sizes: updatedSizes })
 
         const orderProduct = new OrderProduct()
         orderProduct.product = product
@@ -391,8 +391,14 @@ class OrderController {
       const driverRepository = getRepository(Driver)
       const orderProductRepository = getRepository(OrderProduct)
       const customerRepository = getRepository(Customer)
+      const productRepository = getRepository(Product)
       const order = await orderRepository.findOneOrFail({
         where: { id },
+        relations: {
+          orderProducts: {
+            product: true,
+          },
+        },
       })
 
       if (fullName && phone) {
@@ -424,6 +430,25 @@ class OrderController {
           deliveryDate = new Date(`${month}/${day}/${year}`)
         } else {
           deliveryDate = new Date(req.body.deliveryDate)
+        }
+      }
+
+      if (
+        (order.status === OrderStatuses.PACKING ||
+          order.status === OrderStatuses.RECEIVED) &&
+        (status === OrderStatuses.DELIVERY ||
+          status === OrderStatuses.COMPLETED)
+      ) {
+        for (let orderProduct of order.orderProducts) {
+          const product = await productRepository.findOneById(
+            orderProduct.product.id,
+          )
+
+          const size = product.sizes.find(
+            ({ size }) => size === orderProduct.size,
+          )
+          size.quantity -= orderProduct.quantity
+          await productRepository.save(product)
         }
       }
 
@@ -544,6 +569,7 @@ class OrderController {
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Order)
       const customerRepository = getRepository(Customer)
+      const productRepository = getRepository(Product)
 
       const orderToRemove = await orderRepository
         .createQueryBuilder('order')
@@ -579,6 +605,18 @@ class OrderController {
         await customerRepository.save(customer)
       }
 
+      for (let orderProduct of orderToRemove.orderProducts) {
+        const product = await productRepository.findOneById(
+          orderProduct.product.id,
+        )
+
+        const size = product.sizes.find(
+          ({ size }) => size === orderProduct.size,
+        )
+        size.quantity += orderProduct.quantity
+        await productRepository.save(product)
+      }
+
       await orderRepository.remove(orderToRemove)
 
       return res.send({ success: true, message: 'Ապրանքը հեռացված է' })
@@ -611,6 +649,38 @@ class OrderController {
     try {
       const { orderIds, newStatus } = req.body
       const orderRepository = getRepository(Order)
+      const productRepository = getRepository(Product)      
+
+      const oldOrders = await orderRepository.find({
+        where: { id: In(orderIds) },
+        relations: {
+          orderProducts: {
+            product: true,
+          },
+        },
+      })
+
+      for (let order of oldOrders) {
+        if (
+          (order.status === OrderStatuses.PACKING ||
+            order.status === OrderStatuses.RECEIVED) &&
+          (newStatus === OrderStatuses.DELIVERY ||
+            newStatus === OrderStatuses.COMPLETED)
+        ) {
+          for (let orderProduct of order.orderProducts) {
+            const product = await productRepository.findOneById(
+              orderProduct.product.id,
+            )
+
+            const size = product.sizes.find(
+              ({ size }) => size === orderProduct.size,
+            )
+            size.quantity -= orderProduct.quantity
+            await productRepository.save(product)
+          }
+        }
+      }
+
       await orderRepository
         .createQueryBuilder()
         .update(Order)
