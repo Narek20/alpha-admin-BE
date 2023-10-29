@@ -75,16 +75,16 @@ class OrderController {
       const searchTerms = getSearches(req.query?.search as string)
       const orderRepository = getRepository(Order)
       const queryBuilder = orderRepository.createQueryBuilder('order')
-      const order = await orderRepository.find()
-
-      if (!order.length) {
-        return res.send({
-          success: false,
-          message: 'Պատվերներ չեն գտնվել',
-        })
-      }
-
-      const columns = Object.keys(order[0]).slice(1)
+      const columns = [
+        'id',
+        'fullName',
+        'phone',
+        'address',
+        'address2',
+        'notes',
+        'driver',
+        'paymentMethod',
+      ]
 
       const orders = await queryBuilder
         .where(
@@ -94,19 +94,24 @@ class OrderController {
                 outerQb.where(
                   new Brackets((innerQb) => {
                     columns.forEach((column, columnIndex) => {
-                      if (
-                        column === 'isSpecial' ||
-                        column === 'createdAt' ||
-                        column === 'updatedAt' ||
-                        column === 'deliveryDate'
-                      ) {
+                      if (column === 'id' && isNaN(+searchTerm)) {
                         return
                       }
 
                       if (columnIndex === 0) {
-                        innerQb.where({ [column]: ILike(`%${searchTerm}%`) })
+                        innerQb.where({
+                          [column]:
+                            column === 'id'
+                              ? +searchTerm
+                              : ILike(`%${searchTerm}%`),
+                        })
                       } else {
-                        innerQb.orWhere({ [column]: ILike(`%${searchTerm}%`) })
+                        innerQb.orWhere({
+                          [column]:
+                            column === 'id'
+                              ? +searchTerm
+                              : ILike(`%${searchTerm}%`),
+                        })
                       }
                     })
                   }),
@@ -115,19 +120,24 @@ class OrderController {
                 outerQb.andWhere(
                   new Brackets((innerQb) => {
                     columns.forEach((column, columnIndex) => {
-                      if (
-                        column === 'isSpecial' ||
-                        column === 'createdAt' ||
-                        column === 'updatedAt' ||
-                        column === 'deliveryDate'
-                      ) {
+                      if (column === 'id' && isNaN(+searchTerm)) {
                         return
                       }
 
                       if (columnIndex === 0) {
-                        innerQb.where({ [column]: ILike(`%${searchTerm}%`) })
+                        innerQb.where({
+                          [column]:
+                            column === 'id'
+                              ? +searchTerm
+                              : ILike(`%${searchTerm}%`),
+                        })
                       } else {
-                        innerQb.orWhere({ [column]: ILike(`%${searchTerm}%`) })
+                        innerQb.orWhere({
+                          [column]:
+                            column === 'id'
+                              ? +searchTerm
+                              : ILike(`%${searchTerm}%`),
+                        })
                       }
                     })
                   }),
