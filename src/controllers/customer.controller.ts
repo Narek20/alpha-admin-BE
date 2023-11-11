@@ -1,8 +1,9 @@
 import { Request, Response } from 'express'
-import { getRepository } from 'typeorm'
+import { Brackets, ILike, getRepository } from 'typeorm'
 import { Customer } from '../entities/customer.entity'
 import { Order } from '../entities/orders.entity'
 import { getImageUrls } from '../services/images.service'
+import { getSearches } from '../utils/getFilterQueries'
 
 class CustomerController {
   private static instance: CustomerController
@@ -48,6 +49,116 @@ class CustomerController {
       return res.send({
         success: true,
         data: formattedCustomers,
+      })
+    } catch (err) {
+      return res.send({ success: false, message: err.message })
+    }
+  }
+
+  async search(req: Request, res: Response) {
+    try {
+      const { take = 10, skip = 0 } = req.query
+      const searchTerms = getSearches(req.query?.search as string)
+      const customerRepository = getRepository(Customer)
+      const queryBuilder = customerRepository.createQueryBuilder('customer')
+      const columns = ['fullName', 'phone']
+      const customers = await queryBuilder
+        .where(
+          new Brackets((outerQb) => {
+            searchTerms.forEach((searchTerm, index) => {
+              if (index === 0) {
+                outerQb.where(
+                  new Brackets((innerQb) => {
+                    columns.forEach((column, columnIndex) => {
+                      if (column === 'id' && isNaN(+searchTerm)) {
+                        return
+                      }
+
+                      if (columnIndex === 0) {
+                        innerQb.where({
+                          [column]:
+                            column === 'id'
+                              ? +searchTerm
+                              : ILike(`%${searchTerm}%`),
+                        })
+                      } else {
+                        innerQb.orWhere({
+                          [column]:
+                            column === 'id'
+                              ? +searchTerm
+                              : ILike(`%${searchTerm}%`),
+                        })
+                      }
+                    })
+                  }),
+                )
+              } else {
+                outerQb.andWhere(
+                  new Brackets((innerQb) => {
+                    columns.forEach((column, columnIndex) => {
+                      if (column === 'id' && isNaN(+searchTerm)) {
+                        return
+                      }
+
+                      if (columnIndex === 0) {
+                        innerQb.where({
+                          [column]:
+                            column === 'id'
+                              ? +searchTerm
+                              : ILike(`%${searchTerm}%`),
+                        })
+                      } else {
+                        innerQb.orWhere({
+                          [column]:
+                            column === 'id'
+                              ? +searchTerm
+                              : ILike(`%${searchTerm}%`),
+                        })
+                      }
+                    })
+                  }),
+                )
+              }
+            })
+          }),
+        )
+        .take(+take)
+        .skip(+skip * +take)
+        .leftJoinAndSelect('customer.orders', 'order')
+        .leftJoinAndSelect('order.orderProducts', 'order_product')
+        .leftJoinAndSelect('order_product.product', 'product')
+        .getMany()
+
+      const count = await queryBuilder.getCount()
+
+      const formattedCustomers = customers.map((customer) => {
+        let totalPrice = 0
+        let totalQty = 0
+
+        customer.orders.forEach((order) => {
+          order.orderProducts.forEach((orderProduct) => {
+            totalPrice += orderProduct.product.price * orderProduct.quantity
+            totalQty += orderProduct.quantity
+          })
+        })
+
+        return {
+          id: customer.id,
+          fullName: customer.fullName,
+          phone: customer.phone,
+          totalPrice,
+          totalQty,
+        }
+      })
+
+      return res.send({
+        success: true,
+        data: formattedCustomers,
+        pagination: {
+          count,
+          take: +take,
+          skip: +skip,
+        },
       })
     } catch (err) {
       return res.send({ success: false, message: err.message })

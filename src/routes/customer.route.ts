@@ -20,6 +20,13 @@ class CustomerRoutes {
       .get(CustomerController.getAll)
 
     this.router
+      .route('/search')
+      /**
+       * Get all customers
+       */
+      .get(CustomerController.search)
+
+    this.router
       .route('/:phone')
       /**
        * Get single customer
@@ -33,7 +40,7 @@ class CustomerRoutes {
        */
       .put(CustomerController.update)
 
-      this.router
+    this.router
       .route('/:id')
       /**
        * Delete customer
