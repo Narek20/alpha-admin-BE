@@ -243,8 +243,15 @@ class OrderController {
 
   async create(req: Request, res: Response) {
     try {
-      let { fullName, deliveryDate, phone, driver, address, productIDs } =
-        req.body
+      let {
+        fullName,
+        deliveryDate,
+        phone,
+        driver,
+        address,
+        usedCashback,
+        productIDs,
+      } = req.body
 
       const orderRepository = getRepository(Order)
       const driverRepository = getRepository(Driver)
@@ -311,7 +318,19 @@ class OrderController {
         } else {
           order.customer = customer
 
-          if (customer.cashback) {
+          if(usedCashback && customer.cashback) {
+            const cashbackMoney = Math.floor(
+              ((totalPrice - usedCashback) * customer.cashback) / 100,
+            )
+
+            customer.cashback_money = customer.cashback_money
+              ? customer.cashback_money - usedCashback + cashbackMoney
+              : cashbackMoney
+
+            await customerRepository.save(customer)
+
+            order.cashback = cashbackMoney
+          } else if (customer.cashback) {
             const cashbackMoney = Math.floor(
               (totalPrice * customer.cashback) / 100,
             )
