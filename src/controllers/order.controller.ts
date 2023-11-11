@@ -450,6 +450,22 @@ class OrderController {
           size.quantity -= orderProduct.quantity
           await productRepository.save(product)
         }
+      } else if (
+        (order.status === OrderStatuses.DELIVERY ||
+          order.status === OrderStatuses.COMPLETED) &&
+        (status === OrderStatuses.RECEIVED || status === OrderStatuses.PACKING)
+      ) {
+        for (let orderProduct of order.orderProducts) {
+          const product = await productRepository.findOneById(
+            orderProduct.product.id,
+          )
+
+          const size = product.sizes.find(
+            ({ size }) => size === orderProduct.size,
+          )
+          size.quantity += orderProduct.quantity
+          await productRepository.save(product)
+        }
       }
 
       const savedOrder = await orderRepository.save({
@@ -605,16 +621,21 @@ class OrderController {
         await customerRepository.save(customer)
       }
 
-      for (let orderProduct of orderToRemove.orderProducts) {
-        const product = await productRepository.findOneById(
-          orderProduct.product.id,
-        )
+      if (
+        orderToRemove.status === OrderStatuses.DELIVERY ||
+        orderToRemove.status === OrderStatuses.COMPLETED
+      ) {
+        for (let orderProduct of orderToRemove.orderProducts) {
+          const product = await productRepository.findOneById(
+            orderProduct.product.id,
+          )
 
-        const size = product.sizes.find(
-          ({ size }) => size === orderProduct.size,
-        )
-        size.quantity += orderProduct.quantity
-        await productRepository.save(product)
+          const size = product.sizes.find(
+            ({ size }) => size === orderProduct.size,
+          )
+          size.quantity += orderProduct.quantity
+          await productRepository.save(product)
+        }
       }
 
       await orderRepository.remove(orderToRemove)
@@ -649,7 +670,7 @@ class OrderController {
     try {
       const { orderIds, newStatus } = req.body
       const orderRepository = getRepository(Order)
-      const productRepository = getRepository(Product)      
+      const productRepository = getRepository(Product)
 
       const oldOrders = await orderRepository.find({
         where: { id: In(orderIds) },
