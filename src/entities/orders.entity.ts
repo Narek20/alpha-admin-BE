@@ -59,6 +59,12 @@ export class Order {
   isSpecial: boolean
 
   @Column({
+    type: 'int',
+    default: 0
+  })
+  specialPrice: number
+
+  @Column({
     type: 'varchar',
     length: 255,
     default: OrderStatuses.RECEIVED,

@@ -147,6 +147,7 @@ class OrderController {
           }),
         )
         .andWhere('order.status = :status', { status })
+        .orderBy({id: 'DESC'})
         .take(+take)
         .skip(+skip * +take)
         .getMany()
