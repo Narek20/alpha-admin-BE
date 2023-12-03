@@ -14,6 +14,13 @@ export class CreateStoreProductsTable1701627792791
         name: 'store_product',
         columns: [
           {
+            name: 'id',
+            type: 'int',
+            isPrimary: true,
+            isGenerated: true,
+            generationStrategy: 'increment',
+          },
+          {
             name: 'storeId',
             type: 'int',
             isNullable: false,

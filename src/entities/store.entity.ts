@@ -83,9 +83,9 @@ export class Store {
 
   @ManyToMany(() => Product)
   @JoinTable({
-    name: 'order_product',
+    name: 'store_product',
     joinColumn: {
-      name: 'orderId',
+      name: 'storeId',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
@@ -98,7 +98,7 @@ export class Store {
   customer: Customer
 
   @JoinColumn({
-    name: 'order_product',
+    name: 'store_product',
     referencedColumnName: 'quantity',
   })
   products: Product[]

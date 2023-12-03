@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, PrimaryColumn } from 'typeorm'
 import { Store } from './store.entity'
 import { Product } from './products.entity'
 
-@Entity('order_product')
+@Entity('store_product')
 export class StoreProduct {
   @PrimaryColumn({
     type: 'int',

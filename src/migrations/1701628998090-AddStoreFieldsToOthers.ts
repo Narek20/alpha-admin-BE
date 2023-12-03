@@ -8,20 +8,20 @@ import {
 export class AddStoreFieldsToOthers1701628998090 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(
-      'customer',
+      'store',
       new TableColumn({
-        name: 'storeId',
+        name: 'customerId',
         type: 'int',
         isNullable: true,
       }),
     )
 
     await queryRunner.createForeignKey(
-      'customer',
+      'store',
       new TableForeignKey({
-        columnNames: ['storeId'],
+        columnNames: ['customerId'],
         referencedColumnNames: ['id'],
-        referencedTableName: 'store',
+        referencedTableName: 'customer',
         onDelete: 'CASCADE',
       }),
     )
@@ -47,8 +47,8 @@ export class AddStoreFieldsToOthers1701628998090 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropForeignKey('customer', 'storeId')
-    await queryRunner.dropColumn('customer', 'storeId')
+    await queryRunner.dropForeignKey('store', 'customerId')
+    await queryRunner.dropColumn('store', 'customerId')
     await queryRunner.dropForeignKey('product', 'storeId')
     await queryRunner.dropColumn('product', 'storeId')
   }
