@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
-import { Brackets, ILike, In, getRepository } from 'typeorm'
-import { Store } from '../entities/store.entity'
-import { Product } from '../entities/products.entity'
-import { OrderProduct } from '../entities/orderProducts.entity'
-import { getImageUrls } from '../services/images.service'
-import { getOrderQueries, getSearches } from '../utils/getFilterQueries'
-import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
+import { Brackets, ILike, getRepository } from 'typeorm'
 import { Customer } from '../entities/customer.entity'
+import { StoreProduct } from '../entities/storeProducts.entity'
+import { Product } from '../entities/products.entity'
+import { Store } from '../entities/store.entity'
+import { getImageUrls } from '../services/images.service'
+import { DateTimeFormatOptions } from '../types/interfaces/TimeDateOptions.interface'
+import { getOrderQueries, getSearches } from '../utils/getFilterQueries'
 // import { insertData } from '../../lol'
 
 class StoreController {
@@ -167,14 +167,14 @@ class StoreController {
       const orderRepository = getRepository(Store)
       const order = await orderRepository
         .createQueryBuilder('store')
-        .leftJoin('store.orderProducts', 'orderProduct')
+        .leftJoin('store.storeProducts', 'storeProduct')
         .leftJoinAndSelect('orderProduct.product', 'product')
         .select([
           'store',
           'product',
-          'orderProduct.id',
-          'orderProduct.quantity',
-          'orderProduct.size',
+          'storeProduct.id',
+          'storeProduct.quantity',
+          'storeProduct.size',
           'category',
         ])
         .where('store.id = :id', { id })
@@ -186,18 +186,18 @@ class StoreController {
           .send({ success: false, message: "Order wasn't found" })
       }
 
-      let orderProducts = []
+      let storeProducts = []
 
-      for (let i = 0; i < order.orderProducts.length; i++) {
+      for (let i = 0; i < order.storeProducts.length; i++) {
         const productImages = await getImageUrls(
-          order.orderProducts[i].product.id,
+          order.storeProducts[i].product.id,
         )
 
-        orderProducts.push({
-          id: order.orderProducts[i].id,
-          quantity: order.orderProducts[i].quantity,
-          size: order.orderProducts[i].size,
-          product: { ...order.orderProducts[i].product, images: productImages },
+        storeProducts.push({
+          id: order.storeProducts[i].id,
+          quantity: order.storeProducts[i].quantity,
+          size: order.storeProducts[i].size,
+          product: { ...order.storeProducts[i].product, images: productImages },
         })
       }
 
@@ -207,7 +207,7 @@ class StoreController {
 
       return res.send({
         success: true,
-        data: { ...order, createdAt, orderProducts },
+        data: { ...order, createdAt, storeProducts },
       })
     } catch (err) {
       return res.status(500).send({ success: false, message: err.message })
@@ -227,7 +227,7 @@ class StoreController {
       })
 
       let totalPrice = 0
-      let orderProducts = []
+      let storeProducts = []
 
       for (let i = 0; i < productIDs.length; i++) {
         const product = await productRepository.findOneOrFail({
@@ -242,19 +242,19 @@ class StoreController {
 
         // await productRepository.save({ ...product, sizes: updatedSizes })
 
-        const orderProduct = new OrderProduct()
+        const orderProduct = new StoreProduct()
         orderProduct.product = product
         orderProduct.quantity = productIDs[i].quantity
         orderProduct.size = productIDs[i].size
-        orderProduct.orderId = order.id
+        orderProduct.storeId = order.id
         orderProduct.productId = product.id
 
         totalPrice += product.price * productIDs[i].quantity
 
-        orderProducts.push(orderProduct)
+        storeProducts.push(orderProduct)
       }
 
-      order.orderProducts = orderProducts
+      order.storeProducts = storeProducts
 
       if (fullName && phone) {
         const customer = await customerRepository.findOne({
@@ -316,23 +316,23 @@ class StoreController {
       const date = new Date(createdOrder.createdAt)
       const createdAt = date.toLocaleString('en-GB', options)
 
-      const { id, notes } = createdOrder
+      // const { id, notes } = createdOrder
 
-      const sheetsData = [
-        id,
-        fullName,
-        phone,
-        address,
-        notes,
-        totalPrice + '֏',
-        createdAt,
-        createdOrder.orderProducts
-          .map(
-            ({ product, quantity, size }) =>
-              `${product.title}(${size}, ${quantity})`,
-          )
-          .join(', '),
-      ]
+      // const sheetsData = [
+      //   id,
+      //   fullName,
+      //   phone,
+      //   address,
+      //   notes,
+      //   totalPrice + '֏',
+      //   createdAt,
+      //   createdOrder.orderProducts
+      //     .map(
+      //       ({ product, quantity, size }) =>
+      //         `${product.title}(${size}, ${quantity})`,
+      //     )
+      //     .join(', '),
+      // ]
 
       // await insertData([sheetsData])
 
@@ -350,12 +350,12 @@ class StoreController {
       let { status, fullName, phone } = req.body
       const id = parseInt(req.params.id)
       const orderRepository = getRepository(Store)
-      const orderProductRepository = getRepository(OrderProduct)
+      const orderProductRepository = getRepository(StoreProduct)
       const customerRepository = getRepository(Customer)
       const order = await orderRepository.findOneOrFail({
         where: { id },
         relations: {
-          orderProducts: {
+          storeProducts: {
             product: true,
           },
         },
@@ -379,29 +379,29 @@ class StoreController {
         createdAt: req.body.createdAt
           ? new Date(req.body.createdAt)
           : order.createdAt,
-        orderProducts: order.orderProducts,
+        storeProducts: order.storeProducts,
       })
 
       const createdAtDate = new Date(savedOrder.createdAt.getTime())
 
       const createdAt = createdAtDate.toISOString().split('T')[0]
 
-      if (req.body.orderProducts) {
+      if (req.body.storeProducts) {
         let totalPrice = 0
-        const orderProducts: OrderProduct[] = []
+        const storeProducts: StoreProduct[] = []
 
         await Promise.all(
-          req.body.orderProducts?.map(async (orderProduct: OrderProduct) => {
+          req.body.storeProducts?.map(async (storeProduct: StoreProduct) => {
             try {
-              const data: Partial<OrderProduct> = {
-                orderId: order.id,
-                productId: orderProduct.product.id,
-                quantity: orderProduct.quantity,
-                size: orderProduct.size,
+              const data: Partial<StoreProduct> = {
+                storeId: order.id,
+                productId: storeProduct.product.id,
+                quantity: storeProduct.quantity,
+                size: storeProduct.size,
               }
 
-              if (orderProduct.id) {
-                data.id = orderProduct.id
+              if (storeProduct.id) {
+                data.id = storeProduct.id
               }
 
               await orderProductRepository.save(data)
@@ -411,15 +411,15 @@ class StoreController {
                   await orderProductRepository.findOne({ where: data })
                 ).id
 
-                totalPrice += orderProduct.product.price * orderProduct.quantity
+                totalPrice += storeProduct.product.price * storeProduct.quantity
               }
 
-              const savedOrderProduct = {
-                ...orderProduct,
+              const savedStoreProduct = {
+                ...storeProduct,
                 id: data.id,
               }
 
-              orderProducts.unshift(savedOrderProduct)
+              storeProducts.unshift(savedStoreProduct)
             } catch (error) {
               throw error
             }
@@ -427,13 +427,13 @@ class StoreController {
         )
 
         const orderProductList = await orderProductRepository.find({
-          where: { orderId: order.id },
+          where: { storeId: order.id },
         })
 
         await Promise.all(
           orderProductList.map(
             async (el) =>
-              !orderProducts.some((oP) => oP.id === el.id) &&
+              !storeProducts.some((oP) => oP.id === el.id) &&
               (await orderProductRepository.delete({ id: el.id })),
           ),
         )
@@ -462,7 +462,7 @@ class StoreController {
 
         return res.send({
           success: true,
-          data: { ...savedOrder, orderProducts, createdAt },
+          data: { ...savedOrder, storeProducts, createdAt },
           message: 'Պատվերը հաջողությամբ թարմացված է',
         })
       }
@@ -485,14 +485,14 @@ class StoreController {
 
       const orderToRemove = await orderRepository
         .createQueryBuilder('store')
-        .leftJoin('store.orderProducts', 'orderProduct')
-        .leftJoinAndSelect('orderProduct.product', 'product')
+        .leftJoin('store.storeProducts', 'storeProduct')
+        .leftJoinAndSelect('storeProduct.product', 'product')
         .select([
           'store',
           'product',
-          'orderProduct.id',
-          'orderProduct.quantity',
-          'orderProduct.size',
+          'storeProduct.id',
+          'storeProduct.quantity',
+          'storeProduct.size',
           'category',
         ])
         .where('store.id = :id', { id })

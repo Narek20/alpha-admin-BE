@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 import { Customer } from './customer.entity'
-import { OrderProduct } from './orderProducts.entity'
+import { StoreProduct } from './storeProducts.entity'
 import { Product } from './products.entity'
 
 @Entity()
@@ -76,10 +76,10 @@ export class Store {
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt: Date
 
-  @OneToMany(() => OrderProduct, (orderProduct) => orderProduct.order, {
+  @OneToMany(() => StoreProduct, (storeProduct) => storeProduct.store, {
     cascade: true,
   })
-  orderProducts: OrderProduct[]
+  storeProducts: StoreProduct[]
 
   @ManyToMany(() => Product)
   @JoinTable({

@@ -12,6 +12,7 @@ import {
 } from 'typeorm'
 import { Order } from './orders.entity'
 import { Category } from './category.entity'
+import { Store } from './store.entity'
 
 class Size {
   @Column()
@@ -119,4 +120,8 @@ export class Product {
   @ManyToMany(() => Order)
   @JoinTable({ name: 'order_product' })
   orders: Order[]
+
+  @ManyToMany(() => Store)
+  @JoinTable({ name: 'store_product' })
+  stores: Store[]
 }
