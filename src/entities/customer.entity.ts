@@ -6,6 +6,7 @@ import {
   OneToMany,
 } from 'typeorm'
 import { Order } from './orders.entity'
+import { Store } from './store.entity'
 
 @Entity()
 export class Customer {
@@ -27,29 +28,28 @@ export class Customer {
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: true
+    nullable: true,
   })
   address: string
 
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: true
-
+    nullable: true,
   })
   address2: string
 
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: true
+    nullable: true,
   })
   notes: string
 
   @Column({
     type: 'varchar',
     length: 255,
-    nullable: true
+    nullable: true,
   })
   notes2: string
 
@@ -66,6 +66,9 @@ export class Customer {
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date
 
-  @OneToMany(() => Order, order => order.customer)
-  orders: Order[];
+  @OneToMany(() => Order, (order) => order.customer)
+  orders: Order[]
+
+  @OneToMany(() => Store, (store) => store.customer)
+  stores: Store[]
 }
