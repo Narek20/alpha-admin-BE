@@ -8,6 +8,7 @@ import { StorageRoutes } from './storage.route'
 import { CustomerRoutes } from './customer.route'
 import { CategoryRoutes } from './category.route'
 import { CommonRoutes } from './common.route'
+import { StoreRoutes } from './store.route'
 
 /**
  * Router Middleware
@@ -30,6 +31,7 @@ class Router {
       { segment: '/common', handler: CommonRoutes.router },
       { segment: '/customers', handler: CustomerRoutes.router },
       { segment: '/categories', handler: CategoryRoutes.router },
+      { segment: '/store', handler: StoreRoutes.router },
     ])
   }
 
