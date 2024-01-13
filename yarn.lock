@@ -1250,6 +1250,11 @@ create-require@^1.1.0:
   resolved "https://registry.yarnpkg.com/create-require/-/create-require-1.1.1.tgz#c1d7e8f1e5f6cfc9ff65f9cd352d37348756c333"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
 
+cronjob@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/cronjob/-/cronjob-0.1.0.tgz#9c47258a2a5fa759da92c4b8efac259faf992e75"
+  integrity sha512-nSjZOjze7grWfhLVPtRj7Bb9tJwB51BC6+6e2jBtRip4i4msGVOcA4ia8EnRBi/uYfynuuYzEBkcsm87jWIQIQ==
+
 cross-spawn@^7.0.0:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-7.0.3.tgz#f73a85b9d5d41d045551c177e2882d4ac85728a6"

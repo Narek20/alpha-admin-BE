@@ -5,6 +5,8 @@ import { Router } from './src/routes/router'
 import { databaseConnection } from './src/database/connection'
 import { readExcelData } from './asdas'
 
+import './src/cronjob/ram-lifecheck'
+
 const app = express()
 
 app.use(
