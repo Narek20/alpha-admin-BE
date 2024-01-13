@@ -1,5 +1,5 @@
 import os from 'os'
-import cron from 'cronjob'
+import cron from 'node-cron'
 
 const myTask = () => {
   console.log('Running the task every 5 minutes!')
